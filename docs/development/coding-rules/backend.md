@@ -1,9 +1,14 @@
+# Backend (Python/FastAPI) コーディング規約
 
-# Backend (Python/FastAPI)
+## 基本
+
+- こちらのサイトの記載内容に従っていること
+  - [PEP 8 -- Style Guide for Python Code](https://pep8.org/)
+  - [FastAPI Best Practices](https://fastapi.tiangolo.com/ja/tutorial/)
 
 ## ディレクトリ構造
 
-```
+```sh
 backend/app/
 ├── __init__.py
 ├── main.py           # アプリケーションエントリーポイント
