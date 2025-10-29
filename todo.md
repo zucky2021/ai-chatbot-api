@@ -4,6 +4,10 @@
 
 - 基本的にはCursorによる自動管理を想定
 
+## 参考
+
+- [Cursor - Project rules](./.cursor/rules/dev-rules/todo.mdc)
+
 ## Tasks
 
 ### 未着手タスク
