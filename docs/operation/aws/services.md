@@ -146,15 +146,6 @@
 - **現在の構成**: 環境変数ファイル（.env）
 - **移行メリット**: セキュリティ強化、コンプライアンス対応
 
-### AWS Systems Manager Parameter Store
-
-- **用途**: 設定値の管理（Secrets Managerより低コスト）
-- **選定理由**
-  - シンプルな設定値管理
-  - 階層構造による整理
-  - 暗号化パラメータ対応
-  - コスト効率（Secrets Managerより安価）
-
 ## 監視・ログ
 
 ### Amazon CloudWatch
