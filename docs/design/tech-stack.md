@@ -70,6 +70,28 @@
   - ディスク効率が良い（node_modulesの重複削減）
   - 厳密なパッケージ依存関係管理
 
+## インフラ・開発環境
+
+### Docker & Docker Compose v2
+
+- [公式サイト](https://www.docker.com/)
+- 選定理由
+  - 開発環境の統一と再現性の確保
+  - マルチサービス（PostgreSQL、Redis、LocalStackなど）の一元管理
+  - ローカル開発とプロダクション環境の整合性
+  - コンテナベースのモダンな開発手法の学習
+  - Docker Compose v2 でより効率的なサービス管理
+
+### LocalStack
+
+- [公式サイト](https://localstack.cloud/)
+- 選定理由
+  - AWSサービスのローカルエミュレーション
+    - DynamoDB
+    - ElastiCache
+  - コスト削減と高速な開発サイクル
+  - 実際のAWS環境に近い開発体験
+
 ## 開発ツール
 
 ### uv（Python）
