@@ -28,9 +28,9 @@ docker compose logs -f
 
 ## 3. サービスへのアクセス
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **PostgreSQL**: localhost:5432
-- **ElastiCache (Redis)**: localhost:6379
-- **LocalStack**: http://localhost:4566
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8000`
+- **API Docs**: `http://localhost:8000/docs`
+- **PostgreSQL**: `localhost:5432`
+- **ElastiCache (Redis)**: `localhost:6379`
+- **LocalStack**: `http://localhost:4566`
