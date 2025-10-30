@@ -4,8 +4,9 @@
 
 1. [セットアップ](./setup.md)
 2. [開発ツール](./tools/0-index.md)
-3. [コーディング規約](./coding-rules/0-index.md)
-4. [ブランチ戦略](./branch.md)
+3. [ブランチ戦略](./branch.md)
+4. [コーディング規約](./coding-rules/0-index.md)
+5. [CI](./ci/0-index.md)
 
 ## 🛠️ ローカル開発
 
@@ -41,16 +42,16 @@ pnpm dev
 ### WebSocket接続例
 
 ```javascript
-const ws = new WebSocket('ws://localhost:8000/api/chat/ws');
+const ws = new WebSocket('ws://localhost:8000/api/chat/ws')
 
 ws.onopen = () => {
-  console.log('Connected');
-  ws.send('Hello, AI!');
-};
+  console.log('Connected')
+  ws.send('Hello, AI!')
+}
 
-ws.onmessage = (event) => {
-  console.log('Received:', event.data);
-};
+ws.onmessage = event => {
+  console.log('Received:', event.data)
+}
 ```
 
 ## 🗄️ データベース
@@ -124,5 +125,5 @@ docker compose restart localstack
 
 ```yaml
 ports:
-  - "8001:8000"  # 例: 8000を8001に変更
+  - '8001:8000' # 例: 8000を8001に変更
 ```
