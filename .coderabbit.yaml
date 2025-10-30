@@ -636,7 +636,7 @@ knowledge_base:
     # Default: []
     filePatterns:
       - "**/docs/design/**/*.md"
-      - "**/docs/development/coding-rule/**/*.md"
+      - "**/docs/development/coding-rules/**/*.md"
 
   # Configuration for learnings
   # Default: {}
