@@ -47,21 +47,9 @@ EXPOSE 5173
 CMD ["pnpm", "dev", "--host", "0.0.0.0"]
 
 # ==============================================================================
-# Production ステージ: 本番環境用
+# Production ステージ: 本番環境用（S3 + CloudFront）
 # ==============================================================================
-FROM base AS production
+FROM build AS production
 
-# ビルド済みファイルをコピー
-COPY --from=build /app/dist ./dist
-
-# 非rootユーザー作成と所有権設定（セキュリティ向上）
-RUN adduser -D appuser && \
-    chown -R appuser:appuser /app
-
-# 非rootユーザーに切り替え
-USER appuser
-
-EXPOSE 4173
-
-# プレビューサーバー起動（本番環境用）
-CMD ["pnpm", "preview", "--host", "0.0.0.0", "--port", "4173"]
+# S3へのデプロイ用にワークディレクトリを設定(ビルド済みファイルは既に /app/dist に存在)
+WORKDIR /app
