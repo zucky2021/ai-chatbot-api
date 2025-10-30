@@ -4,9 +4,9 @@ services:
     image: postgres:16-alpine
     container_name: ai-chatbot-postgres
     environment:
-      POSTGRES_USER: chatbot
-      POSTGRES_PASSWORD: chatbot_password
-      POSTGRES_DB: chatbot_db
+      POSTGRES_USER: ${POSTGRES_USER:-chatbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chatbot_password}
+      POSTGRES_DB: ${POSTGRES_DB:-chatbot_db}
     ports:
       - "5432:5432"
     volumes:
@@ -48,18 +48,22 @@ services:
   #     context: ./backend
   #     dockerfile: Dockerfile
   #   container_name: ai-chatbot-backend
+  #   env_file:
+  #     - backend/.env  # Backend専用の環境変数ファイル
   #   ports:
   #     - "8000:8000"
   #   volumes:
   #     - ./backend:/app
   #   environment:
-  #     - DATABASE_URL=postgresql://chatbot:chatbot_password@postgres:5432/chatbot_db
-  #     - REDIS_URL=redis://redis:6379
-  #     - AWS_ENDPOINT_URL=http://localstack:4566
-  #     - AWS_REGION=us-east-1
-  #     - AWS_ACCESS_KEY_ID=test
-  #     - AWS_SECRET_ACCESS_KEY=test
-  #     - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+  #     # プロジェクトルートの.envから読み込む共通変数も使用可能
+  #     - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-chatbot}:${POSTGRES_PASSWORD:-chatbot_password}@postgres:5432/${POSTGRES_DB:-chatbot_db}}
+  #     - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+  #     - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL:-http://localstack:4566}
+  #     - AWS_REGION=${AWS_REGION:-us-east-1}
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+  #     # backend/.envから自動的に読み込まれる（env_file経由）
+  #     # - GOOGLE_AI_API_KEY (env_fileで読み込まれるため不要)
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
@@ -74,14 +78,13 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: ai-chatbot-frontend
+    env_file:
+      - ./frontend/.env # Frontend専用の環境変数ファイル（Viteが自動的に読み込む）
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    environment:
-      - VITE_API_URL=http://localhost:8000
-      - VITE_ASSET_BASE_URL=http://localhost:4566/ai-chatbot-assets
     # depends_on:
     #   - backend
     command: pnpm dev --host 0.0.0.0

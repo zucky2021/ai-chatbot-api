@@ -17,8 +17,9 @@
     },
     "apidog": {
       "command": "npx",
-      "args": ["-y", "apidog-mcp-server@latest", "--project-id=1058162"],
+      "args": ["-y", "apidog-mcp-server@latest", "--project-id=${env:APIDOG_PROJECT_ID}"],
       "env": {
+        "APIDOG_PROJECT_ID": "${env:APIDOG_PROJECT_ID}",
         "APIDOG_ACCESS_TOKEN": "${env:APIDOG_ACCESS_TOKEN}"
       }
     }
