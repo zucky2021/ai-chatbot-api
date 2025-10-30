@@ -1,0 +1,106 @@
+services:
+  # PostgreSQL - 会話履歴保存用
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-chatbot-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chatbot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chatbot_password}
+      POSTGRES_DB: ${POSTGRES_DB:-chatbot_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatbot -d chatbot_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack - AWSサービス（DynamoDB、S3）のエミュレーション
+  localstack:
+    image: localstack/localstack:latest
+    container_name: ai-chatbot-localstack
+    ports:
+      - "4566:4566" # LocalStack Edge
+      - "4510-4559:4510-4559" # External services port range
+    environment:
+      - SERVICES=s3,dynamodb,secretsmanager
+      - AWS_DEFAULT_REGION=ap-northeast-1
+      - DEBUG=1
+      - LS_DATA_DIR=/tmp/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - PERSISTENCE=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./localstack/init-scripts:/etc/localstack/init/ready.d
+      - ./localstack/init-data:/init-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # FastAPI Backend
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: ai-chatbot-backend
+  #   env_file:
+  #     - backend/.env  # Backend専用の環境変数ファイル
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./backend:/app
+  #   environment:
+  #     # プロジェクトルートの.envから読み込む共通変数も使用可能
+  #     - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-chatbot}:${POSTGRES_PASSWORD:-chatbot_password}@postgres:5432/${POSTGRES_DB:-chatbot_db}}
+  #     - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+  #     - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL:-http://localstack:4566}
+  #     - AWS_REGION=${AWS_REGION:-us-east-1}
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+  #     # backend/.envから自動的に読み込まれる（env_file経由）
+  #     # - GOOGLE_AI_API_KEY (env_fileで読み込まれるため不要)
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     localstack:
+  #       condition: service_healthy
+  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: ai-chatbot-frontend
+    env_file:
+      - ./frontend/.env # Frontend専用の環境変数ファイル（Viteが自動的に読み込む）
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    # depends_on:
+    #   - backend
+    command: pnpm dev --host 0.0.0.0
+
+  # Redis (local replacement for ElastiCache)
+  redis:
+    image: redis:8-alpine
+    container_name: ai-chatbot-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  postgres_data:
+  localstack_data:
