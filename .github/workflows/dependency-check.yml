@@ -1,0 +1,146 @@
+name: Dependency Check
+
+on:
+  schedule:
+    # 毎週月曜日の午前10時（JST）に実行
+    - cron: "0 1 * * 1"
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+  workflow_dispatch: # 手動実行を許可
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # Frontend依存関係チェック（Node.js + pnpm）
+  check-frontend-dependencies:
+    runs-on: ubuntu-latest
+    name: Check Frontend Dependencies (pnpm)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for outdated dependencies
+        id: outdated-check
+        working-directory: frontend
+        run: |
+          echo "🔍 Checking for outdated dependencies..."
+
+          # pnpm outdatedを実行
+          if pnpm outdated --recursive --long > outdated.txt 2>&1; then
+            echo "✅ All dependencies are up to date"
+            echo "has_outdated=false" >> $GITHUB_OUTPUT
+          else
+            if [ $? -eq 1 ]; then
+              echo "⚠️ Found outdated dependencies:"
+              cat outdated.txt || true
+              echo "has_outdated=true" >> $GITHUB_OUTPUT
+            else
+              echo "✅ All dependencies are up to date"
+              echo "has_outdated=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Fail if outdated dependencies exist
+        if: steps.outdated-check.outputs.has_outdated == 'true'
+        run: |
+          echo "❌ Outdated dependencies detected in Frontend!"
+          echo ""
+          echo "💡 Please update dependencies before merging:"
+          echo ""
+          echo "🔧 Method 1: pnpm update (semver-safe)"
+          echo "   cd frontend"
+          echo "   pnpm outdated"
+          echo "   pnpm update"
+          echo ""
+          echo "🚀 Method 2: pnpm-check-updates (pnpm-i)"
+          echo "   cd frontend"
+          echo "   npx pnpm-i"
+          echo "   pnpm install"
+          exit 1
+
+  # Backend依存関係チェック（Python + uv）
+  # check-backend-dependencies:
+  #   runs-on: ubuntu-latest
+  #   name: Check Backend Dependencies (Python)
+
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.11"
+  #         cache: "pip"
+  #         cache-dependency-path: backend/requirements.txt
+
+  #     - name: Setup uv
+  #       uses: astral-sh/setup-uv@v5
+  #       with:
+  #         version: "latest"
+
+  #     - name: Install dependencies
+  #       working-directory: backend
+  #       run: |
+  #         uv pip install -r requirements.txt
+
+  #     - name: Check for outdated dependencies
+  #       id: outdated-check
+  #       working-directory: backend
+  #       run: |
+  #         echo "🔍 Checking for outdated dependencies..."
+
+  #         # pipの代わりにuvでチェック
+  #         if uv pip list --outdated > outdated.txt 2>&1; then
+  #           echo "has_outdated=false" >> $GITHUB_OUTPUT
+  #         else
+  #           if [ $? -ne 0 ]; then
+  #             echo "⚠️ Found outdated dependencies:"
+  #             cat outdated.txt || true
+  #             echo "has_outdated=true" >> $GITHUB_OUTPUT
+  #           else
+  #             echo "✅ All dependencies are up to date"
+  #             echo "has_outdated=false" >> $GITHUB_OUTPUT
+  #           fi
+  #         fi
+
+  #     - name: Fail if outdated dependencies exist
+  #       if: steps.outdated-check.outputs.has_outdated == 'true'
+  #       run: |
+  #         echo "❌ Outdated dependencies detected in Backend!"
+  #         echo ""
+  #         echo "💡 Please update dependencies before merging:"
+  #         echo ""
+  #         echo "🔧 Method 1: Manual update"
+  #         echo "   cd backend"
+  #         echo "   uv pip list --outdated"
+  #         echo "   # Edit requirements.txt with new versions"
+  #         echo "   uv pip install -r requirements.txt"
+  #         echo ""
+  #         echo "🚀 Method 2: pip-tools (Recommended)"
+  #         echo "   cd backend"
+  #         echo "   uv pip install pip-tools"
+  #         echo "   uv pip-compile --upgrade requirements.in"
+  #         echo "   uv pip install -r requirements.txt"
+  #         exit 1
