@@ -20,23 +20,21 @@ jobs:
     strategy:
       matrix:
         node-version: [24]
-        pnpm-version: [10]
     name: Check Frontend Dependencies (pnpm)
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm ${{ matrix.pnpm-version }}
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: ${{ matrix.pnpm-version }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+          cache-dependency-path: frontend/package.json
 
       - name: Install dependencies
         working-directory: frontend

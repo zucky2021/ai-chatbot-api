@@ -23,8 +23,6 @@
 
 - `.husky/pre-commit` - Git フック設定
 - `package.json` の `lint-staged` セクション - 対象ファイルとコマンドの設定
-- `.prettierrc.json` - Prettier の設定
-- `.prettierignore` - Prettier の除外ファイル設定
 
 ### 使用方法
 
