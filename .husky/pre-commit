@@ -1,0 +1,11 @@
+#!/bin/sh
+
+echo "[husky] Running pre-commit checks..."
+
+pnpm exec lint-staged
+if [ $? -ne 0 ]; then
+  echo "❌ [husky] Pre-commit checks failed!"
+  exit 1
+fi
+
+echo "✅ [husky] Pre-commit checks passed!"
