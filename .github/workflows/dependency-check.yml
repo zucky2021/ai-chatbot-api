@@ -3,7 +3,7 @@ name: Dependency Check
 on:
   schedule:
     # 毎週月曜日の午前10時（JST）に実行
-    - cron: "0 1 * * 1"
+    - cron: '0 1 * * 1'
   pull_request:
     branches: [main]
     types: [opened, reopened, synchronize]
@@ -17,24 +17,26 @@ jobs:
   # Frontend依存関係チェック（Node.js + pnpm）
   check-frontend-dependencies:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [24]
+        pnpm-version: [10]
     name: Check Frontend Dependencies (pnpm)
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - name: Setup pnpm
+      - name: Install pnpm ${{ matrix.pnpm-version }}
         uses: pnpm/action-setup@v4
         with:
-          version: 9
-          run_install: false
+          version: ${{ matrix.pnpm-version }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - name: Install dependencies
         working-directory: frontend
@@ -68,15 +70,10 @@ jobs:
           echo ""
           echo "💡 Please update dependencies before merging:"
           echo ""
-          echo "🔧 Method 1: pnpm update (semver-safe)"
+          echo "🔧 pnpm update (semver-safe)"
           echo "   cd frontend"
           echo "   pnpm outdated"
           echo "   pnpm update"
-          echo ""
-          echo "🚀 Method 2: pnpm-check-updates (pnpm-i)"
-          echo "   cd frontend"
-          echo "   npx pnpm-i"
-          echo "   pnpm install"
           exit 1
 
   # Backend依存関係チェック（Python + uv）
