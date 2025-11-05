@@ -6,24 +6,6 @@
   - [PEP 8 -- Style Guide for Python Code](https://pep8.org/)
   - [FastAPI Best Practices](https://fastapi.tiangolo.com/ja/tutorial/)
 
-## ディレクトリ構造
-
-```sh
-backend/app/
-├── __init__.py
-├── main.py           # アプリケーションエントリーポイント
-├── config.py         # 設定管理
-├── database.py       # データベース接続
-├── models/           # データモデル
-│   ├── __init__.py
-│   ├── postgres.py   # PostgreSQLモデル（SQLAlchemy）
-│   └── dynamodb.py   # DynamoDBモデル（Pydantic）
-└── routers/          # APIエンドポイント
-    ├── __init__.py
-    ├── chat.py       # チャット関連
-    └── health.py     # ヘルスチェック
-```
-
 ## 命名規則
 
 ### 変数・関数名
@@ -136,17 +118,17 @@ def create_user_session(
 ) -> UserSession:
     """
     ユーザーセッションを作成する
-    
+
     Args:
         user_id: ユーザーID
         session_metadata: セッションのメタデータ（オプション）
-    
+
     Returns:
         作成されたUserSessionオブジェクト
-    
+
     Raises:
         ValueError: user_idが無効な場合
-    
+
     Example:
         >>> session = create_user_session("user_123", {"language": "ja"})
     """
@@ -217,7 +199,7 @@ class ChatMessage(BaseModel):
     message: str = Field(..., min_length=1, max_length=1000)
     session_id: str
     timestamp: datetime = Field(default_factory=datetime.now)
-    
+
     class Config:
         json_schema_extra = {
             "example": {

@@ -1,12 +1,17 @@
 {
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
   "editor.renderWhitespace": "boundary",
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
   },
   "cSpell.words": ["APIDOG", "coderabbit", "localstack", "VITE"]
 }
