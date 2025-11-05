@@ -11,7 +11,7 @@
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.tabSize": 4
   },
   "cSpell.words": ["APIDOG", "coderabbit", "localstack", "VITE"]

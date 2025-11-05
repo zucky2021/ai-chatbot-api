@@ -9,7 +9,6 @@
     "davidanson.vscode-markdownlint",
     "docker.docker",
     "ms-python.black-formatter",
-    "ms-python.isort",
     "charliermarsh.ruff"
   ]
 }
