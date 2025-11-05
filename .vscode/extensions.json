@@ -8,6 +8,8 @@
     "eamodio.gitlens",
     "davidanson.vscode-markdownlint",
     "docker.docker",
-    "ms-python.autopep8"
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "charliermarsh.ruff"
   ]
 }

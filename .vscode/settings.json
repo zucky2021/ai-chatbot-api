@@ -11,7 +11,7 @@
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
   "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8"
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "cSpell.words": ["APIDOG", "coderabbit", "localstack", "VITE"]
 }
