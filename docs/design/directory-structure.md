@@ -25,12 +25,13 @@ backend/app/
 │   ├── entities/              # エンティティ
 │   │   ├── conversation.py   # 会話エンティティ
 │   │   └── session.py        # セッションエンティティ
-│   └── value_objects/        # 値オブジェクト
-│       └── message.py        # メッセージ値オブジェクト
+│   ├── value_objects/        # 値オブジェクト
+│   │   └── message.py        # メッセージ値オブジェクト
+│   └── repositories/         # リポジトリインターフェース
+│       └── repositories.py   # リポジトリインターフェース定義
 │
 ├── application/               # Application Layer
 │   ├── interfaces/           # インターフェース
-│   │   ├── repositories.py   # リポジトリインターフェース
 │   │   └── services.py       # サービスインターフェース
 │   ├── use_cases/            # ユースケース
 │   │   └── chat.py           # チャットユースケース
