@@ -39,6 +39,7 @@ backend/app/
 │
 ├── infrastructure/            # Infrastructure Layer
 │   ├── config.py             # 設定管理
+│   ├── database.py           # データベース接続管理
 │   ├── repositories/         # リポジトリ実装
 │   │   ├── postgres_repository.py    # PostgreSQL実装
 │   │   └── dynamodb_repository.py    # DynamoDB実装
