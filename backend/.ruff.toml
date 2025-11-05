@@ -19,12 +19,11 @@ select = [
 
 # 無視するルール
 ignore = [
-    "E501",  # line too long (blackで処理)
+    "E501",  # line too long (ruff formatで処理)
 ]
 
 # インポート順序の設定（isort互換）
 [lint.isort]
-# blackとの互換性を保つ
 known-first-party = ["app"]
 force-sort-within-sections = true
 force-wrap-aliases = true

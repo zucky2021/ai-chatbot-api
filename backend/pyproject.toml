@@ -24,12 +24,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black==24.1.1",
-    "flake8==7.0.0",
     "mypy==1.8.0",
+    "ruff==0.3.4",
 ]
 
 [dependency-groups]
 dev = [
-    "black==24.1.1",
+    "ruff==0.3.4",
 ]
