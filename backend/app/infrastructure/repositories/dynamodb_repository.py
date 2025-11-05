@@ -5,8 +5,8 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError
 
-from app.application.interfaces.repositories import ISessionRepository
 from app.domain.entities.session import Session, SessionStatus
+from app.domain.repositories import ISessionRepository
 from app.infrastructure.config import settings
 
 

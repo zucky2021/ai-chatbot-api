@@ -3,8 +3,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces.repositories import IConversationRepository
 from app.domain.entities.conversation import Conversation
+from app.domain.repositories import IConversationRepository
 from app.models.postgres import Conversation as ConversationModel
 
 

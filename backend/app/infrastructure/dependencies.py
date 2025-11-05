@@ -1,14 +1,9 @@
 """依存性注入の設定"""
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces.repositories import (
-    IConversationRepository,
-    ISessionRepository,
-)
 from app.application.interfaces.services import IAIService, ICacheService
+from app.domain.repositories import IConversationRepository, ISessionRepository
 from app.infrastructure.database import get_db
 from app.infrastructure.repositories.dynamodb_repository import (
     DynamoDBSessionRepository,
