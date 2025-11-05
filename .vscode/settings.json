@@ -12,7 +12,11 @@
   },
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
+  "ruff.organizeImports": true,
   "cSpell.words": ["APIDOG", "coderabbit", "localstack", "VITE"]
 }
