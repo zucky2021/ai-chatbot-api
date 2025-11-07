@@ -7,6 +7,8 @@
     "github.vscode-pull-request-github",
     "eamodio.gitlens",
     "davidanson.vscode-markdownlint",
-    "docker.docker"
+    "docker.docker",
+    "charliermarsh.ruff",
+    "njpwerner.autodocstring"
   ]
 }

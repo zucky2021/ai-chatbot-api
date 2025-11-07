@@ -1,0 +1,26 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual Environment
+venv/
+
+# Environment
+.env
+.env.example
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+
+# Coverage
+coverage/

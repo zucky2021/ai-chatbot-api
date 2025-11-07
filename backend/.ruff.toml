@@ -1,0 +1,30 @@
+# ruff設定ファイル
+# 詳細: https://docs.astral.sh/ruff/
+
+# 対象Pythonバージョン
+target-version = "py312"
+
+# 行の長さ制限（PEP 8準拠）
+line-length = 79
+
+# 有効にするルール
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+]
+
+# 無視するルール
+ignore = [
+    "E501",  # line too long (ruff formatで処理)
+]
+
+# インポート順序の設定（isort互換）
+[lint.isort]
+known-first-party = ["app"]
+force-sort-within-sections = true
+force-wrap-aliases = true
+split-on-trailing-comma = true

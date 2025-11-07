@@ -1,6 +1,8 @@
 {
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
   "editor.renderWhitespace": "boundary",
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
@@ -8,5 +10,13 @@
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.tabSize": 4,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "ruff.organizeImports": true,
   "cSpell.words": ["APIDOG", "coderabbit", "localstack", "VITE"]
 }
