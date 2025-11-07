@@ -34,7 +34,7 @@ FROM base AS dev
 
 # 開発依存関係も含めてインストール
 RUN uv sync --frozen && \
-    rm -rf /root/.cache
+    rm -rf /home/appuser/.cache/uv
 
 # アプリケーションコードをコピー（開発時はボリュームマウントで上書きされる）
 COPY . .
@@ -58,7 +58,7 @@ FROM base AS prod
 
 # 本番依存関係のみインストール（開発依存関係は除外）
 RUN uv sync --frozen --no-dev && \
-    rm -rf /root/.cache
+    rm -rf /home/appuser/.cache/uv
 
 # アプリケーションコードをコピー
 COPY . .
@@ -74,7 +74,7 @@ EXPOSE 8000
 
 # ヘルスチェックを追加（本番環境で重要）
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
+    CMD curl -f http://localhost:8000/api/health || exit 1
 
 # 本番用のデフォルトコマンド
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

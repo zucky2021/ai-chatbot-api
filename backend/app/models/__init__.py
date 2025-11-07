@@ -1,5 +1,1 @@
-# Database Models
-
-
-
-
+"""Database Models"""

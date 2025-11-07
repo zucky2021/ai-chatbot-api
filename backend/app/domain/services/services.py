@@ -46,3 +46,4 @@ class ICacheService(ABC):
     async def exists(self, key: str) -> bool:
         """キャッシュキーの存在確認"""
         pass
+

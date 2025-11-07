@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SendMessageRequest(BaseModel):
@@ -15,14 +15,15 @@ class SendMessageRequest(BaseModel):
     session_id: str = Field(..., description="セッションID")
     metadata: dict[str, Any] | None = Field(None, description="メタデータ")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "message": "こんにちは",
                 "session_id": "sess_123456",
                 "metadata": {"language": "ja"},
             }
         }
+    )
 
 
 class SendMessageResponse(BaseModel):
@@ -34,8 +35,8 @@ class SendMessageResponse(BaseModel):
     session_id: str
     created_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "conversation_id": 1,
                 "message": "こんにちは",
@@ -44,6 +45,7 @@ class SendMessageResponse(BaseModel):
                 "created_at": "2024-01-01T00:00:00",
             }
         }
+    )
 
 
 class CreateSessionRequest(BaseModel):
@@ -54,13 +56,14 @@ class CreateSessionRequest(BaseModel):
     )
     metadata: dict[str, Any] | None = Field(None, description="メタデータ")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "session_id": "sess_123456",
                 "metadata": {"language": "ja"},
             }
         }
+    )
 
 
 class CreateSessionResponse(BaseModel):
@@ -70,23 +73,42 @@ class CreateSessionResponse(BaseModel):
     status: str
     created_at: datetime
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "session_id": "sess_123456",
                 "status": "active",
                 "created_at": "2024-01-01T00:00:00",
+            },
+        }
+    )
+
+class ConversationItem(BaseModel):
+    """会話履歴DTO"""
+
+    id: int
+    message: str
+    response: str
+    created_at: datetime
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "message": "こんにちは",
+                "response": "こんにちは！",
+                "created_at": "2024-01-01T00:00:00",
             }
         }
-
+    )
 
 class ConversationHistoryResponse(BaseModel):
     """会話履歴レスポンスDTO"""
 
-    conversations: list[dict[str, Any]]
+    conversations: list[ConversationItem]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "conversations": [
                     {
@@ -98,3 +120,4 @@ class ConversationHistoryResponse(BaseModel):
                 ]
             }
         }
+    )

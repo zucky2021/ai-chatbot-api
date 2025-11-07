@@ -1,9 +1,13 @@
 """Redisキャッシュサービス実装"""
 
+import logging
+
 import redis.asyncio as redis
 
-from app.application.interfaces.services import ICacheService
+from app.domain.services import ICacheService
 from app.infrastructure.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class RedisCacheService(ICacheService):
@@ -29,6 +33,7 @@ class RedisCacheService(ICacheService):
         except Exception as e:
             # キャッシュエラーはログに記録するが、例外は発生させない
             print(f"キャッシュ取得エラー: {str(e)}")
+            logger.error(f"キャッシュ取得エラー: {str(e)}", exc_info=True)
             return None
 
     async def set(self, key: str, value: str, ttl: int = 3600) -> None:
@@ -56,3 +61,9 @@ class RedisCacheService(ICacheService):
         except Exception as e:
             print(f"キャッシュ存在確認エラー: {str(e)}")
             return False
+
+    async def close(self) -> None:
+        """Redisクライアントをクローズ"""
+        if self._redis is not None:
+            await self._redis.close()
+            self._redis = None

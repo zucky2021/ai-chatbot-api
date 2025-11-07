@@ -2,20 +2,25 @@
 FastAPIアプリケーションのエントリーポイント
 """
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.presentation.routers import chat, health
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.infrastructure.config import settings
 from app.infrastructure.database import init_db
+from app.presentation.routers import chat, health
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 起動時の処理
     print("🚀 AI Chatbot API is starting up...")
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        raise
     yield
     # シャットダウン時の処理
     print("👋 AI Chatbot API is shutting down...")
@@ -33,7 +38,7 @@ app = FastAPI(
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

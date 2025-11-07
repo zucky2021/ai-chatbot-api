@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator
 
 import google.generativeai as genai
 
-from app.application.interfaces.services import IAIService
+from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
 

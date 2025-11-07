@@ -17,7 +17,10 @@ router = APIRouter()
 
 
 @router.post("/send", response_model=SendMessageResponse)
-async def send_message(request: SendMessageRequest, db: AsyncSession = Depends(get_db)):
+async def send_message(
+    request: SendMessageRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
     メッセージを送信してAIレスポンスを取得
 
@@ -40,7 +43,8 @@ async def create_session(request: CreateSessionRequest):
 
 
 @router.get(
-    "/sessions/{session_id}/history", response_model=ConversationHistoryResponse
+    "/sessions/{session_id}/history",
+    response_model=ConversationHistoryResponse,
 )
 async def get_history(session_id: str, db: AsyncSession = Depends(get_db)):
     """

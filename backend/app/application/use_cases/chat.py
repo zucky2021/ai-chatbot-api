@@ -1,12 +1,11 @@
 """チャットユースケース"""
 
 from datetime import datetime
-from typing import Optional
 
-from app.application.interfaces.services import IAIService, ICacheService
 from app.domain.entities.conversation import Conversation
 from app.domain.entities.session import Session
 from app.domain.repositories import IConversationRepository, ISessionRepository
+from app.domain.services import IAIService, ICacheService
 from app.domain.value_objects.message import Message
 
 

@@ -2,8 +2,8 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.interfaces.services import IAIService, ICacheService
 from app.domain.repositories import IConversationRepository, ISessionRepository
+from app.domain.services import IAIService, ICacheService
 from app.infrastructure.database import get_db
 from app.infrastructure.repositories.dynamodb_repository import (
     DynamoDBSessionRepository,
