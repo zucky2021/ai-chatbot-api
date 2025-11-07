@@ -8,7 +8,7 @@
     "eamodio.gitlens",
     "davidanson.vscode-markdownlint",
     "docker.docker",
-    "ms-python.black-formatter",
-    "charliermarsh.ruff"
+    "charliermarsh.ruff",
+    "njpwerner.autodocstring"
   ]
 }
