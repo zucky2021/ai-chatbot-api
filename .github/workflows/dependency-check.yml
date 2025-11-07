@@ -100,18 +100,15 @@ jobs:
           echo "🔍 Checking for outdated dependencies..."
 
           # uvで依存関係をチェック
-          if uv pip list --outdated > outdated.txt 2>&1; then
+          uv pip list --outdated > outdated.txt 2>&1 || true
+
+          if [ -s outdated.txt ]; then
+            echo "⚠️ Found outdated dependencies:"
+            cat outdated.txt
+            echo "has_outdated=true" >> $GITHUB_OUTPUT
+          else
             echo "✅ All dependencies are up to date"
             echo "has_outdated=false" >> $GITHUB_OUTPUT
-          else
-            if [ $? -ne 0 ]; then
-              echo "⚠️ Found outdated dependencies:"
-              cat outdated.txt || true
-              echo "has_outdated=true" >> $GITHUB_OUTPUT
-            else
-              echo "✅ All dependencies are up to date"
-              echo "has_outdated=false" >> $GITHUB_OUTPUT
-            fi
           fi
 
       - name: Fail if outdated dependencies exist
