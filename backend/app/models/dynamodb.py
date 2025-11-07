@@ -12,7 +12,7 @@ class UserSession(BaseModel):
     session_id: str
     user_id: str
     status: SessionStatus = SessionStatus.ACTIVE
-    metadata: dict[str, Any] = None
+    metadata: dict[str, Any] | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     expires_at: int | None = None  # TTL用のUnix timestamp
