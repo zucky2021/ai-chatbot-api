@@ -3,6 +3,8 @@ FastAPIアプリケーションのエントリーポイント
 """
 
 from contextlib import asynccontextmanager
+import logging
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,19 +13,31 @@ from app.infrastructure.config import settings
 from app.infrastructure.database import init_db
 from app.presentation.routers import chat, health
 
+# ログ設定
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+    ],
+)
+
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 起動時の処理
-    print("🚀 AI Chatbot API is starting up...")
+    logger.info("🚀 AI Chatbot API is starting up...")
     try:
         await init_db()
+        logger.info("✅ Database initialized successfully")
     except Exception as e:
-        print(f"❌ Database initialization failed: {e}")
+        logger.error(f"❌ Database initialization failed: {e}", exc_info=True)
         raise
     yield
     # シャットダウン時の処理
-    print("👋 AI Chatbot API is shutting down...")
+    logger.info("👋 AI Chatbot API is shutting down...")
 
 
 app = FastAPI(
