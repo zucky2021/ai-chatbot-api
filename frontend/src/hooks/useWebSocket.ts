@@ -66,6 +66,8 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
       const wsUrl = `${apiUrl.replace('http', 'ws')}/api/chat/ws?session_id=${sessionId}&user_id=${userId}`
       const ws = new WebSocket(wsUrl)
 
+      let heartbeat: ReturnType<typeof setInterval> | null = null
+
       ws.onopen = () => {
         console.log('WebSocket接続が確立されました')
         setIsConnected(true)
@@ -73,11 +75,12 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
         onOpen?.()
 
         // ハートビート（30秒ごと）
-        pingIntervalRef.current = setInterval(() => {
+        heartbeat = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: 'ping' }))
           }
         }, 30000)
+        pingIntervalRef.current = heartbeat
       }
 
       ws.onmessage = event => {
@@ -108,12 +111,13 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
               console.log('保存完了:', data.conversation_id)
               break
 
-            case 'error':
+            case 'error': {
               console.error('エラー:', data.message)
               const error = new Error(data.message || 'Unknown error')
               setError(error)
               onError?.(error)
               break
+            }
 
             case 'pong':
               // ハートビート応答
@@ -137,18 +141,26 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
       }
 
       ws.onclose = event => {
+        // ハートビートを停止（このインスタンスのものだけ）
+        if (heartbeat) {
+          clearInterval(heartbeat)
+          if (pingIntervalRef.current === heartbeat) {
+            pingIntervalRef.current = null
+          }
+          heartbeat = null
+        }
+
+        // 旧WebSocketのoncloseが後から発火した場合、最新接続を切断扱いにしない
+        if (wsRef.current && wsRef.current !== ws) {
+          return
+        }
+
         // 正常な切断（1000, 1001）の場合はログを出力しない
         if (event.code !== 1000 && event.code !== 1001) {
           console.log('WebSocket接続が閉じられました', event.code, event.reason)
         }
 
         setIsConnected(false)
-
-        // ハートビートを停止
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current)
-          pingIntervalRef.current = null
-        }
 
         // コード1005（No Status Received）は接続が確立されなかったことを示す
         // この場合はエラーを設定しない（接続確立前の切断のため）
@@ -159,6 +171,10 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
         } else if (event.code === 1005) {
           // コード1005の場合は、接続が確立されなかったことを示す
           console.warn('WebSocket接続が確立されませんでした (コード: 1005)')
+        }
+
+        if (wsRef.current === ws) {
+          wsRef.current = null
         }
 
         onClose?.()

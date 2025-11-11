@@ -108,25 +108,71 @@ class ConnectionManager:
         Args:
             message: 送信するメッセージ（辞書形式）
             session_id: セッションID
+
+        Raises:
+            RuntimeError: 予期しないエラーが発生した場合（通常は発生しない）
         """
         if session_id not in self._active_connections:
+            logger.debug(
+                f"セッション {session_id} にアクティブな接続がありません"
+            )
+            return
+
+        connections = self._active_connections[session_id]
+        if not connections:
             return
 
         # 切断された接続を削除するためのセット
         disconnected = set()
 
-        for websocket in self._active_connections[session_id]:
+        # 接続のコピーを作成（イテレーション中に変更される可能性があるため）
+        for websocket in list(connections):
             try:
+                # 接続状態を事前チェック
+                if websocket.client_state.name != "CONNECTED":
+                    logger.debug(
+                        f"WebSocket接続が既に閉じられています: session_id={session_id}"
+                    )
+                    disconnected.add(websocket)
+                    continue
+
                 await websocket.send_json(message)
-            except Exception as e:
-                logger.warning(
-                    f"セッション {session_id} へのメッセージ送信エラー: {str(e)}"
+            except WebSocketDisconnect:
+                # WebSocket接続が切断された場合は無視
+                logger.debug(
+                    f"WebSocket接続が切断されました: session_id={session_id}"
                 )
                 disconnected.add(websocket)
+            except Exception as e:
+                # その他の接続関連エラーも無視
+                error_type = type(e).__name__
+                if (
+                    "disconnect" in error_type.lower()
+                    or "disconnected" in error_type.lower()
+                    or "close" in str(e).lower()
+                ):
+                    logger.debug(
+                        f"WebSocket接続が閉じられています: session_id={session_id}, "
+                        f"error_type={error_type}"
+                    )
+                    disconnected.add(websocket)
+                else:
+                    # 予期しないエラーは警告として記録
+                    logger.warning(
+                        f"セッション {session_id} へのメッセージ送信エラー: {str(e)}"
+                    )
+                    disconnected.add(websocket)
 
-        # 切断された接続を削除
-        for websocket in disconnected:
-            self.disconnect(websocket, session_id)
+        # 切断された接続を削除（ロックを使用して並行処理を安全に）
+        if disconnected:
+            if session_id in self._locks:
+                async with self._locks[session_id]:
+                    for websocket in disconnected:
+                        self.disconnect(websocket, session_id)
+            else:
+                # ロックが存在しない場合（通常は発生しない）
+                for websocket in disconnected:
+                    self.disconnect(websocket, session_id)
 
     def get_connection_count(self, session_id: str) -> int:
         """

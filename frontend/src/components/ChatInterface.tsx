@@ -42,7 +42,6 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
         setIsProcessing(false)
       } else if (data.type === 'error') {
         setIsProcessing(false)
-        alert(`エラー: ${data.message}`)
         console.error('WebSocketエラー:', data.message)
       }
     },
@@ -56,12 +55,16 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
   useEffect(() => {
     if (currentResponse) {
       setMessages(prev => {
-        const newMessages = [...prev]
-        const lastMessage = newMessages[newMessages.length - 1]
-        if (lastMessage && lastMessage.type === 'ai' && isProcessing) {
-          lastMessage.content = currentResponse
+        const lastIndex = prev.length - 1
+        const lastMessage = prev[lastIndex]
+        if (!lastMessage || lastMessage.type !== 'ai' || !isProcessing) {
+          return prev
         }
-        return newMessages
+        const updatedMessage = {
+          ...lastMessage,
+          content: currentResponse,
+        }
+        return [...prev.slice(0, lastIndex), updatedMessage]
       })
     }
   }, [currentResponse, isProcessing])

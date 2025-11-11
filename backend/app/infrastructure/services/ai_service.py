@@ -33,11 +33,15 @@ class GoogleAIService(IAIService):
             logger.info(
                 f"利用可能なモデル（generateContent対応）: {supported_models}"
             )
-            model_names = [m.name for m in all_models]
-            if model_name not in model_names:
+            model_names = {m.name for m in all_models}
+            normalized_names = {name.split("/", 1)[-1] for name in model_names}
+            if (
+                model_name not in model_names
+                and model_name not in normalized_names
+            ):
                 logger.warning(
                     f"指定されたモデル '{model_name}' が利用可能なモデルリストにありません。"
-                    f"利用可能なモデル: {supported_models}"
+                    f"利用可能なモデル: {model_names} または {normalized_names}"
                 )
         except Exception as e:
             logger.warning(f"利用可能なモデルの取得に失敗: {str(e)}")
