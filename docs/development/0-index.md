@@ -7,6 +7,7 @@
 3. [ブランチ戦略](./branch.md)
 4. [コーディング規約](./coding-rules/0-index.md)
 5. [CI](./ci/0-index.md)
+6. [WebSocketチャット機能](./websocket.md)
 
 ## 🛠️ ローカル開発
 
@@ -39,20 +40,9 @@ pnpm dev
 
 ## 📚 使用方法
 
-### WebSocket接続例
+### WebSocketチャット機能
 
-```javascript
-const ws = new WebSocket('ws://localhost:8000/api/chat/ws')
-
-ws.onopen = () => {
-  console.log('Connected')
-  ws.send('Hello, AI!')
-}
-
-ws.onmessage = event => {
-  console.log('Received:', event.data)
-}
-```
+詳細な使用方法については、[WebSocketチャット機能](./websocket.md)を参照してください。
 
 ## 🗄️ データベース
 

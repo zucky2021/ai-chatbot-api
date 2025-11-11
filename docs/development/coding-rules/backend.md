@@ -83,30 +83,7 @@ def create_session(user_id, metadata=None):  # 型が不明確
 
 ## 関数・メソッド
 
-#### 単一責任の原則
-
-1つの関数は1つのことだけを行う
-
-```python
-# Good
-def calculate_total(items: List[Item]) -> float:
-    return sum(item.price for item in items)
-
-def format_currency(amount: float) -> str:
-    return f"${amount:.2f}"
-
-# Bad
-def calculate_and_format(items: List[Item]) -> str:
-    total = sum(item.price for item in items)  # 計算と整形が混在
-    return f"${total:.2f}"
-```
-
-#### 関数の長さ
-
-- 1つの関数は**50行以下**を目安とする
-- 長くなる場合は、論理的な単位に分割
-
-#### Docstring
+### Docstring
 
 - **docstring**で関数の目的、引数、戻り値を説明
 - **Google形式**または**NumPy形式**を使用
@@ -135,7 +112,7 @@ def create_user_session(
     pass
 ```
 
-#### ルーター
+### ルーター
 
 - ルーターは機能ごとに分離: `routers/chat.py`, `routers/health.py`
 - プレフィックスは設定ファイルで統一管理
@@ -159,7 +136,7 @@ async def websocket_endpoint(websocket: WebSocket):
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 ```
 
-#### 依存性注入
+### 依存性注入
 
 - `Depends()`を使用して依存性を注入
 - 共通の処理は依存性として切り出す
@@ -352,24 +329,4 @@ async def process_message(message: str):
     except Exception as e:
         logger.error(f"Failed to process message: {str(e)}", exc_info=True)
         raise
-```
-
-### リファクタリング
-
-- コードスメルを避ける: 長すぎる関数、重複コード、循環参照など
-- 定期的にコードレビューを行い、改善点を洗い出す
-
-### ツール・フォーマッター
-
-- **black**: コードフォーマッター
-- **flake8**: リンター
-- **mypy**: 型チェッカー
-
-```bash
-# フォーマット
-black backend/
-
-# チェック
-flake8 backend/
-mypy backend/
 ```

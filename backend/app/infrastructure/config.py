@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     # Google AI
     GOOGLE_AI_API_KEY: str
+    GOOGLE_AI_MODEL: str = "gemini-flash-latest"  # デフォルトはgemini-flash-latest（常に最新のFlashモデルを使用）
 
     # API Settings
     API_TITLE: str = "AI Chatbot API"

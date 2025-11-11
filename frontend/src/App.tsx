@@ -1,36 +1,77 @@
-import { useState } from "react";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { useState, useEffect } from 'react'
+import { ChatInterface } from './components/ChatInterface'
+import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0);
-  const assetBase = import.meta.env.VITE_ASSET_BASE_URL || "";
-  const reactLogoUrl = `${assetBase}/react.svg`;
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+  useEffect(() => {
+    // セッションを作成
+    const createSession = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/api/chat/sessions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            metadata: { language: 'ja' },
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error(`セッション作成に失敗しました: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        setSessionId(data.session_id)
+        setIsLoading(false)
+      } catch (err) {
+        console.error('セッション作成エラー:', err)
+        setError(err instanceof Error ? err.message : 'セッション作成に失敗しました')
+        setIsLoading(false)
+      }
+    }
+
+    createSession()
+  }, [apiUrl])
+
+  if (isLoading) {
+    return (
+      <div className="app-loading">
+        <p>セッションを作成中...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="app-error">
+        <h2>エラーが発生しました</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    )
+  }
+
+  if (!sessionId) {
+    return (
+      <div className="app-error">
+        <h2>セッションIDが取得できませんでした</h2>
+        <button onClick={() => window.location.reload()}>再試行</button>
+      </div>
+    )
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogoUrl} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  );
+    <div className="app">
+      <ChatInterface sessionId={sessionId} apiUrl={apiUrl} />
+    </div>
+  )
 }
 
-export default App;
+export default App

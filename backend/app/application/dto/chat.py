@@ -83,6 +83,7 @@ class CreateSessionResponse(BaseModel):
         }
     )
 
+
 class ConversationItem(BaseModel):
     """会話履歴DTO"""
 
@@ -101,6 +102,7 @@ class ConversationItem(BaseModel):
             }
         }
     )
+
 
 class ConversationHistoryResponse(BaseModel):
     """会話履歴レスポンスDTO"""
