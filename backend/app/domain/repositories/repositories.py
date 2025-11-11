@@ -62,4 +62,3 @@ class ISessionRepository(ABC):
     async def delete(self, session_id: str) -> None:
         """セッションを削除"""
         pass
-
