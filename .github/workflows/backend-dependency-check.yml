@@ -1,0 +1,49 @@
+name: Backend Dependency Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: # 指定したブランチへのPRのみ
+      - main
+    paths: # 指定したパスのファイルが変更された場合のみ
+      - 'backend/**'
+      - '.github/workflows/dependency-check.yml'
+  schedule:
+    # 毎週月曜2時UTC (JST: 11時)
+    - cron: '0 2 * * 1'
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.12]
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: 'latest'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --dev
+
+      - name: Display dependency tree
+        run: uv tree
+
+      - name: Check for available updates (dry-run)
+        run: uv lock --upgrade --dry-run || echo "Update check completed"
+
+      - name: Security vulnerability scan
+        run: uv run pip-audit --desc
