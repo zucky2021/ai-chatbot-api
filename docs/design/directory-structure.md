@@ -32,7 +32,7 @@ backend/app/
 │   └── services/             # サービスインターフェース
 │       └── services.py       # サービスインターフェース定義
 │
-├── application/               # Application Layer
+├── usecase/                  # Use Case Layer（ユースケースレイヤー）
 │   ├── use_cases/            # ユースケース
 │   │   └── chat.py           # チャットユースケース
 │   └── dto/                  # データ転送オブジェクト

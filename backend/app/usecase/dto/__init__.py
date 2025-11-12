@@ -1,6 +1,6 @@
 """データ転送オブジェクト（DTO）"""
 
-from app.application.dto.chat import (
+from app.usecase.dto.chat import (
     ConversationHistoryResponse,
     CreateSessionRequest,
     CreateSessionResponse,

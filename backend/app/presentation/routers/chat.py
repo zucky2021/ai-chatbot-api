@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Query, WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.dto.chat import (
+from app.usecase.dto.chat import (
     ConversationHistoryResponse,
     CreateSessionRequest,
     CreateSessionResponse,

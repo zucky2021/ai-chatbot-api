@@ -19,6 +19,16 @@ class Settings(BaseSettings):
     GOOGLE_AI_API_KEY: str
     GOOGLE_AI_MODEL: str = "gemini-flash-latest"  # デフォルトはgemini-flash-latest（常に最新のFlashモデルを使用）
 
+    # LangChain Settings
+    LANGCHAIN_MEMORY_TYPE: str = "buffer"  # buffer, summary, summary_buffer
+    LANGCHAIN_MAX_TOKENS: int = 4000
+    LANGCHAIN_TEMPERATURE: float = 0.7
+    LANGCHAIN_SYSTEM_PROMPT: str = "あなたは親切で丁寧なAIアシスタントです。ユーザーの質問に分かりやすく答えてください。"
+
+    # LangGraph Settings
+    LANGGRAPH_ENABLED: bool = False
+    LANGGRAPH_DEBUG: bool = False
+
     # API Settings
     API_TITLE: str = "AI Chatbot API"
     API_VERSION: str = "1.0.0"
