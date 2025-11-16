@@ -7,6 +7,8 @@
 - **LangChain**: LLMアプリケーション構築のためのフレームワーク
 - **LangGraph**: LangChainの拡張機能であり、複雑な会話フローを制御するためのステートマシンベースのフレームワーク
 
+> **📚 関連ドキュメント**: 3つのAIサービス（GoogleAIService、LangChainAIService、LangGraphAIService）の詳細な比較については、[AIサービス比較ドキュメント](./ai-services-comparison.md)を参照してください。
+
 ## 導入の目的
 
 1. **会話履歴管理の改善**: 構造化されたメモリ管理とトークン制御
@@ -291,7 +293,17 @@ class Settings(BaseSettings):
 2. ⏳ エージェントの実装
 3. ⏳ ツール実行チェーンの構築
 
-## テスト
+## 動作確認
+
+詳細な動作確認方法については、[動作確認ガイド](./langchain-testing.md)を参照してください。
+
+### クイックスタート
+
+```bash
+# 単体テストスクリプトを実行
+cd backend
+uv run python test_langchain_service.py
+```
 
 ### 単体テスト
 

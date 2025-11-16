@@ -2,13 +2,13 @@
 
 from collections.abc import AsyncGenerator
 import logging
-from typing import TypedDict, Annotated, Literal
+from typing import Annotated, Literal, TypedDict
 
-from langgraph.graph import StateGraph, END
-from langgraph.graph.message import add_messages
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.graph import END, StateGraph
+from langgraph.graph.message import add_messages
 
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
@@ -105,9 +105,15 @@ class LangGraphAIService(IAIService):
             content = last_message.content.lower()
 
             # 簡単な意図判定（将来はより高度な判定を実装）
-            if any(keyword in content for keyword in ["検索", "調べて", "情報", "データ"]):
+            # TODO: nodeを分ける,システムプロンプトで分岐する
+            if any(
+                keyword in content
+                for keyword in ["検索", "調べて", "情報", "データ"]
+            ):
                 state["next_action"] = "rag"
-            elif any(keyword in content for keyword in ["計算", "実行", "ツール"]):
+            elif any(
+                keyword in content for keyword in ["計算", "実行", "ツール"]
+            ):
                 state["next_action"] = "tool"
             else:
                 state["next_action"] = "normal"
@@ -170,7 +176,9 @@ class LangGraphAIService(IAIService):
             # ステートを初期化
             state: GraphState = {
                 "messages": [],
-                "session_id": message.metadata.get("session_id", "") if message.metadata else "",
+                "session_id": message.metadata.get("session_id", "")
+                if message.metadata
+                else "",
                 "user_id": message.sender,
                 "context": context,
                 "metadata": message.metadata or {},
@@ -207,7 +215,9 @@ class LangGraphAIService(IAIService):
             # ステートを初期化
             state: GraphState = {
                 "messages": [],
-                "session_id": message.metadata.get("session_id", "") if message.metadata else "",
+                "session_id": message.metadata.get("session_id", "")
+                if message.metadata
+                else "",
                 "user_id": message.sender,
                 "context": context,
                 "metadata": message.metadata or {},
@@ -231,7 +241,7 @@ class LangGraphAIService(IAIService):
                         for msg in messages:
                             if isinstance(msg, AIMessage) and msg.content:
                                 # 新しい部分のみを取得
-                                new_content = msg.content[len(full_response):]
+                                new_content = msg.content[len(full_response) :]
                                 if new_content:
                                     full_response = msg.content
                                     yield new_content
@@ -241,7 +251,9 @@ class LangGraphAIService(IAIService):
                 # ストリーミングで取得できなかった場合は通常実行
                 result = await self._graph.ainvoke(state)
                 ai_messages = [
-                    msg for msg in result["messages"] if isinstance(msg, AIMessage)
+                    msg
+                    for msg in result["messages"]
+                    if isinstance(msg, AIMessage)
                 ]
                 if ai_messages:
                     yield ai_messages[-1].content
@@ -250,7 +262,9 @@ class LangGraphAIService(IAIService):
             logger.error(f"LangGraph AIストリーム生成エラー: {error_msg}")
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")
 
-    def _build_messages_from_context(self, state: GraphState, context: str) -> None:
+    def _build_messages_from_context(
+        self, state: GraphState, context: str
+    ) -> None:
         """
         コンテキスト文字列から会話履歴を構築してメッセージに追加
 
@@ -274,12 +288,16 @@ class LangGraphAIService(IAIService):
             if line.startswith("User:"):
                 # 前のユーザーメッセージがあれば保存
                 if current_user_message:
-                    state["messages"].append(HumanMessage(content=current_user_message))
+                    state["messages"].append(
+                        HumanMessage(content=current_user_message)
+                    )
                 current_user_message = line.replace("User:", "").strip()
             elif line.startswith("AI:"):
                 ai_message = line.replace("AI:", "").strip()
                 if current_user_message:
-                    state["messages"].append(HumanMessage(content=current_user_message))
+                    state["messages"].append(
+                        HumanMessage(content=current_user_message)
+                    )
                     state["messages"].append(AIMessage(content=ai_message))
                     current_user_message = None
                 else:
@@ -288,5 +306,6 @@ class LangGraphAIService(IAIService):
 
         # 最後のユーザーメッセージがあれば保存
         if current_user_message:
-            state["messages"].append(HumanMessage(content=current_user_message))
-
+            state["messages"].append(
+                HumanMessage(content=current_user_message)
+            )

@@ -21,7 +21,7 @@
 
 ## 詳細比較
 
-### 2. プロンプト構築
+### プロンプト構築
 
 **GoogleAIService**:
 
@@ -36,7 +36,7 @@ def _build_prompt(self, message: Message, context: str = "") -> str:
     return f"User: {message.content}\nAI:"
 ```
 
-#### LangChainAIService
+**LangChainAIService**:
 
 - **方法**: `ChatPromptTemplate`を使用
 - **システムプロンプト**: 設定ファイルから取得
@@ -50,7 +50,7 @@ self._prompt = ChatPromptTemplate.from_messages([
 ])
 ```
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 - **方法**: `ChatPromptTemplate`を使用（LangChainAIServiceと同様）
 - **システムプロンプト**: 設定ファイルから取得
@@ -63,9 +63,9 @@ self._prompt = ChatPromptTemplate.from_messages([
 ])
 ```
 
-### 3. 会話履歴管理
+### 会話履歴管理
 
-#### GoogleAIService
+**GoogleAIService**:
 
 - **方法**: 文字列としてプロンプトに埋め込み
 - **形式**: `"User: ...\nAI: ...\nUser: ...\nAI: ..."`
@@ -74,7 +74,7 @@ self._prompt = ChatPromptTemplate.from_messages([
   - 構造化されていない
   - メモリ管理なし
 
-#### LangChainAIService
+**LangChainAIService**:
 
 - **方法**: `ChatMessageHistory`を使用
 - **形式**: 構造化されたメッセージオブジェクト
@@ -83,7 +83,7 @@ self._prompt = ChatPromptTemplate.from_messages([
   - 会話後に履歴を保存
   - メモリ管理機能あり
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 - **方法**: ステート内の`messages`リストで管理
 - **形式**: `BaseMessage`オブジェクトのリスト
@@ -92,94 +92,70 @@ self._prompt = ChatPromptTemplate.from_messages([
   - `add_messages`で自動的にメッセージを追加
   - 各ノード間でステートを共有
 
-### 4. LangChain機能の活用
+### 実行フロー
 
-#### GoogleAIService
+**GoogleAIService**:
 
-- **使用機能**: LLMの直接呼び出しのみ
-- **チェーン**: 使用しない
-- **実装**:
-
-```python
-messages = [HumanMessage(content=prompt)]
-response = await self._llm.ainvoke(messages)
-```
-
-#### LangChainAIService
-
-- **使用機能**: プロンプトテンプレート + LLMチェーン
-- **チェーン**: `|`演算子で構築
-- **実装**:
-
-```python
-chain = self._prompt | self._llm
-response = await chain.ainvoke({"input": message.content, "history": messages})
-```
-
-#### LangGraphAIService
-
-- **使用機能**: プロンプトテンプレート + LLMチェーン + グラフ
-- **チェーン**: ノード内で使用
-- **実装**:
-
-```python
-chain = self._prompt | self._llm
-response = await chain.ainvoke({"messages": state["messages"]})
-```
-
-### 5. 実行フロー
-
-#### GoogleAIService
-
-```
-入力 → プロンプト構築 → LLM呼び出し → レスポンス
+```mermaid
+flowchart LR
+    A[入力] --> B[プロンプト構築] --> C[LLM呼び出し] --> D[レスポンス]
 ```
 
 - シンプルな線形フロー
 - 条件分岐なし
 
-#### LangChainAIService
+**LangChainAIService**:
 
-```
-入力 → 履歴構築 → チェーン実行 → 履歴保存 → レスポンス
+```mermaid
+flowchart LR
+    A[入力] --> B[履歴構築] --> C[チェーン実行] --> D[履歴保存] --> E[レスポンス]
 ```
 
 - チェーンベースの実行
 - プロンプトテンプレートによる構造化
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
-```
-入力 → 入力ノード → 意図判定 → [通常/RAG/ツール] → 出力ノード → レスポンス
+```mermaid
+flowchart TD
+    A[入力] --> B[入力ノード]
+    B --> C[意図判定]
+    C -->|通常| D[通常処理]
+    C -->|RAG| E[RAG処理]
+    C -->|ツール| F[ツール処理]
+    D --> G[出力ノード]
+    E --> G
+    F --> G
+    G --> H[レスポンス]
 ```
 
 - グラフベースの実行
 - 条件分岐とルーティング
 - 複数のノードを経由
 
-### 6. 設定の柔軟性
+### 設定の柔軟性
 
-#### GoogleAIService
+**GoogleAIService**:
 
 - **Temperature**: ハードコード（0.7）
 - **システムプロンプト**: なし
 - **設定項目**: 最小限
 
-#### LangChainAIService
+**LangChainAIService**:
 
 - **Temperature**: 設定ファイルから取得（`LANGCHAIN_TEMPERATURE`）
 - **システムプロンプト**: 設定ファイルから取得（`LANGCHAIN_SYSTEM_PROMPT`）
 - **メモリタイプ**: 設定可能（`LANGCHAIN_MEMORY_TYPE`）
 - **最大トークン数**: 設定可能（`LANGCHAIN_MAX_TOKENS`）
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 - **Temperature**: 設定ファイルから取得（`LANGCHAIN_TEMPERATURE`）
 - **システムプロンプト**: 設定ファイルから取得（`LANGCHAIN_SYSTEM_PROMPT`）
 - **デバッグモード**: 設定可能（`LANGGRAPH_DEBUG`）
 - **有効/無効**: 設定可能（`LANGGRAPH_ENABLED`）
 
-### 7. メモリ管理
+### メモリ管理
 
 | 項目             | GoogleAIService | LangChainAIService   | LangGraphAIService     |
 | ---------------- | --------------- | -------------------- | ---------------------- |
@@ -187,9 +163,9 @@ response = await chain.ainvoke({"messages": state["messages"]})
 | **履歴の永続化** | なし            | なし（メモリ内のみ） | なし（メモリ内のみ）   |
 | **履歴の構造化** | なし            | あり                 | あり                   |
 
-### 9. ストリーミング処理
+### ストリーミング処理
 
-#### GoogleAIService
+**GoogleAIService**:
 
 ```python
 async for chunk in self._llm.astream(messages):
@@ -199,7 +175,7 @@ async for chunk in self._llm.astream(messages):
 
 - シンプルなストリーミング
 
-#### LangChainAIService
+**LangChainAIService**:
 
 ```python
 async for chunk in chain.astream({"input": message.content, "history": messages}):
@@ -212,7 +188,7 @@ async for chunk in chain.astream({"input": message.content, "history": messages}
 - チェーン経由のストリーミング
 - 完全なレスポンスを保存
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 ```python
 async for chunk in self._graph.astream(state):
@@ -225,20 +201,20 @@ async for chunk in self._graph.astream(state):
 - グラフの各ノードからのストリーミング
 - ノードごとの処理が必要
 
-### 10. 使用ケース
+### 使用ケース
 
-#### GoogleAIService
+**GoogleAIService**:
 
 - **適しているケース**:
   - シンプルな会話ボット
   - プロトタイプ開発
   - 最小限の依存関係で動作させたい場合
-- \*\*制限事項:
+- **制限事項**:
   - システムプロンプトなし
   - 設定の柔軟性が低い
   - メモリ管理なし
 
-#### LangChainAIService
+**LangChainAIService**:
 
 - **適しているケース**:
   - 標準的な会話ボット
@@ -249,7 +225,7 @@ async for chunk in self._graph.astream(state):
   - 条件分岐なし
   - 複雑なフロー制御が難しい
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 - **適しているケース**:
   - 複雑な会話フローが必要
@@ -264,7 +240,7 @@ async for chunk in self._graph.astream(state):
 
 ### プロンプト構築の違い
 
-#### GoogleAIService
+**GoogleAIService**:
 
 ```python
 # 文字列連結による構築
@@ -272,7 +248,7 @@ prompt = f"{context}\n\nUser: {message.content}\nAI:"
 messages = [HumanMessage(content=prompt)]
 ```
 
-#### LangChainAIService
+**LangChainAIService**:
 
 ```python
 # テンプレートによる構築
@@ -283,7 +259,7 @@ response = await chain.ainvoke({
 })
 ```
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 ```python
 # テンプレートによる構築（ノード内で実行）
@@ -293,19 +269,19 @@ response = await chain.ainvoke({"messages": state["messages"]})
 
 ### 会話履歴の扱い
 
-#### GoogleAIService
+**GoogleAIService**:
 
 - 文字列として扱う
 - プロンプトに直接埋め込む
 - 構造化されていない
 
-#### LangChainAIService
+**LangChainAIService**:
 
 - `ChatMessageHistory`オブジェクトとして扱う
 - コンテキスト文字列から解析して構築
 - 会話後に履歴を更新
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 - ステート内の`messages`リストとして扱う
 - `BaseMessage`オブジェクトのリスト
@@ -313,14 +289,14 @@ response = await chain.ainvoke({"messages": state["messages"]})
 
 ### 実行の流れ
 
-#### GoogleAIService
+**GoogleAIService**:
 
 1. プロンプトを文字列で構築
 2. `HumanMessage`を作成
 3. LLMを直接呼び出し
 4. レスポンスを返す
 
-#### LangChainAIService
+**LangChainAIService**:
 
 1. コンテキストから履歴を構築
 2. チェーンを作成（プロンプト | LLM）
@@ -328,7 +304,7 @@ response = await chain.ainvoke({"messages": state["messages"]})
 4. 履歴を更新
 5. レスポンスを返す
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 1. ステートを初期化
 2. コンテキストからメッセージを構築
@@ -377,7 +353,7 @@ response = await chain.ainvoke({"messages": state["messages"]})
 
 ### 基本的な使用例
 
-#### GoogleAIService
+**GoogleAIService**:
 
 ```python
 from app.infrastructure.services.ai_service import GoogleAIService
@@ -393,7 +369,7 @@ message = Message(
 response = await service.generate_response(message, context="")
 ```
 
-#### LangChainAIService
+**LangChainAIService**:
 
 ```python
 from app.infrastructure.services.langchain_ai_service import LangChainAIService
@@ -409,7 +385,7 @@ message = Message(
 response = await service.generate_response(message, context="")
 ```
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 ```python
 from app.infrastructure.services.langgraph_ai_service import LangGraphAIService
@@ -428,21 +404,21 @@ response = await service.generate_response(message, context="")
 
 ### ストリーミング例
 
-#### GoogleAIService
+**GoogleAIService**:
 
 ```python
 async for chunk in service.generate_stream(message, context=""):
     print(chunk, end="")
 ```
 
-#### LangChainAIService
+**LangChainAIService**:
 
 ```python
 async for chunk in service.generate_stream(message, context=""):
     print(chunk, end="")
 ```
 
-#### LangGraphAIService
+**LangGraphAIService**:
 
 ```python
 async for chunk in service.generate_stream(message, context=""):

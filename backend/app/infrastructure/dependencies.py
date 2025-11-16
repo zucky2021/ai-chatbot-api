@@ -11,8 +11,10 @@ from app.infrastructure.repositories.dynamodb_repository import (
 from app.infrastructure.repositories.postgres_repository import (
     PostgresConversationRepository,
 )
-from app.infrastructure.services.ai_service import GoogleAIService
 from app.infrastructure.services.cache_service import RedisCacheService
+from app.infrastructure.services.langgraph_ai_service import (
+    LangGraphAIService,
+)
 
 
 async def get_conversation_repository(
@@ -34,7 +36,7 @@ def get_session_repository() -> ISessionRepository:
 
 def get_ai_service() -> IAIService:
     """AIサービスを取得"""
-    return GoogleAIService()
+    return LangGraphAIService()
 
 
 def get_cache_service() -> ICacheService:
