@@ -5,26 +5,34 @@ description = "AI Chatbot API Backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi==0.121.0",
+    "fastapi==0.121.1",
     "uvicorn[standard]==0.38.0",
     "websockets==15.0.1",
     "sqlalchemy==2.0.44",
     "alembic==1.17.1",
     "psycopg2-binary==2.9.11",
     "asyncpg==0.30.0",
-    "greenlet==3.1.1",
+    "greenlet==3.2.4",
     "redis==7.0.1",
     "hiredis==3.3.0",
-    "boto3==1.40.68",
-    "google-generativeai==0.8.5",
+    "boto3==1.40.71",
     "python-multipart==0.0.20",
     "python-dotenv==1.2.1",
     "pydantic==2.12.4",
-    "pydantic-settings==2.11.0",
+    "pydantic-settings==2.12.0",
+    # LangChain
+    "langchain>=1.0.5",
+    "langchain-core>=1.0.4",
+    "langchain-community>=0.4.1",
+    "langchain-google-genai>=3.0.2",
+    # LangGraph
+    "langgraph>=1.0.3",
 ]
 
 [project.optional-dependencies]
 dev = [
     "mypy==1.18.2",
     "ruff==0.14.4",
+    "pytest>=8.0.0",
+    "pip-audit>=2.7.0",
 ]

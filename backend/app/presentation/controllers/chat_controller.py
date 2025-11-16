@@ -5,14 +5,14 @@ import uuid
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.dto.chat import (
+from app.usecase.dto.chat import (
     ConversationHistoryResponse,
     CreateSessionRequest,
     CreateSessionResponse,
     SendMessageRequest,
     SendMessageResponse,
 )
-from app.application.use_cases.chat import (
+from app.usecase.use_cases.chat import (
     CreateSessionUseCase,
     GetConversationHistoryUseCase,
     SendMessageUseCase,
