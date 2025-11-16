@@ -20,6 +20,7 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
   const [inputMessage, setInputMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const currentResponseRef = useRef<string>('')
   const { isConnected, currentResponse, sendMessage, error } = useWebSocket({
     sessionId,
     userId,
@@ -28,6 +29,7 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
     onMessage: data => {
       if (data.type === 'processing') {
         setIsProcessing(true)
+        currentResponseRef.current = ''
         // 新しいAIメッセージを開始
         setMessages(prev => [
           ...prev,
@@ -38,6 +40,21 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
             timestamp: new Date(),
           },
         ])
+      } else if (data.type === 'chunk' && data.content) {
+        // チャンクが来たら、累積して最後のAIメッセージを更新
+        currentResponseRef.current += data.content
+        setMessages(prev => {
+          const lastIndex = prev.length - 1
+          const lastMessage = prev[lastIndex]
+          if (!lastMessage || lastMessage.type !== 'ai' || !isProcessing) {
+            return prev
+          }
+          const updatedMessage = {
+            ...lastMessage,
+            content: currentResponseRef.current,
+          }
+          return [...prev.slice(0, lastIndex), updatedMessage]
+        })
       } else if (data.type === 'done') {
         setIsProcessing(false)
       } else if (data.type === 'error') {
@@ -51,28 +68,10 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
     },
   })
 
-  // currentResponseが更新されたら、最後のAIメッセージを更新
-  useEffect(() => {
-    if (currentResponse) {
-      setMessages(prev => {
-        const lastIndex = prev.length - 1
-        const lastMessage = prev[lastIndex]
-        if (!lastMessage || lastMessage.type !== 'ai' || !isProcessing) {
-          return prev
-        }
-        const updatedMessage = {
-          ...lastMessage,
-          content: currentResponse,
-        }
-        return [...prev.slice(0, lastIndex), updatedMessage]
-      })
-    }
-  }, [currentResponse, isProcessing])
-
   // メッセージが更新されたら自動スクロール
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, currentResponse])
+  }, [messages])
 
   const handleSend = () => {
     if (!inputMessage.trim() || !isConnected || isProcessing) {

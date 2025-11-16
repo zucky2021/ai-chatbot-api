@@ -1,4 +1,4 @@
-name: Frontend Lint and Type Check
+name: Frontend Lint
 
 on:
   workflow_dispatch:
