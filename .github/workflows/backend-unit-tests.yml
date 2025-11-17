@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Backend Unit Tests
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - 'backend/**'
-      - '.github/workflows/unit-tests.yml'
+      - '.github/workflows/backend-unit-tests.yml'
 
 jobs:
   unit-tests:
@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --frozen --dev
+        run: uv pip install -e ".[dev]"
 
       - name: Run pytest
         run: uv run pytest --verbose
