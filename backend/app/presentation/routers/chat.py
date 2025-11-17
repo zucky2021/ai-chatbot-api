@@ -3,6 +3,9 @@
 from fastapi import APIRouter, Depends, Query, WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.infrastructure.database import AsyncSessionLocal, get_db
+from app.presentation.controllers.chat_controller import ChatController
+from app.presentation.websocket.chat_handler import handle_websocket_chat
 from app.usecase.dto.chat import (
     ConversationHistoryResponse,
     CreateSessionRequest,
@@ -10,9 +13,6 @@ from app.usecase.dto.chat import (
     SendMessageRequest,
     SendMessageResponse,
 )
-from app.infrastructure.database import AsyncSessionLocal, get_db
-from app.presentation.controllers.chat_controller import ChatController
-from app.presentation.websocket.chat_handler import handle_websocket_chat
 
 router = APIRouter()
 

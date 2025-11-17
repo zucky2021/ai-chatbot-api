@@ -5,17 +5,9 @@ on:
   pull_request:
     branches:
       - main
-      - develop
     paths:
       - 'backend/**'
       - '.github/workflows/backend-lint.yml'
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'backend/**'
-      - '.github/workflows/lint-and-format.yml'
 
 jobs:
   lint-and-format:
