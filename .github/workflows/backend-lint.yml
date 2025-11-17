@@ -42,7 +42,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --frozen --dev
+        run: |
+          uv sync --frozen
+          uv pip install -e ".[dev]"
 
       - name: Run ruff linter
         run: uv run ruff check .
