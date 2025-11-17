@@ -14,7 +14,7 @@ language: "ja-JP"
 
 # Set the tone of reviews and chat. Example: 'You must use talk like Mr. T. I pity the fool who doesn't!'
 # Default: ""
-tone_instructions: ""
+tone_instructions: "`/docs/development/coding-rules/review.md`に記載されている通りレビューコメントには必ずプレフィックスをつけてください。"
 
 # Enable early-access features.
 # Default: false
