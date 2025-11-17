@@ -8,7 +8,7 @@ on:
       - develop
     paths:
       - 'backend/**'
-      - '.github/workflows/lint-and-format.yml'
+      - '.github/workflows/backend-lint.yml'
   push:
     branches:
       - main
