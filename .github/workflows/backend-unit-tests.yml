@@ -39,4 +39,7 @@ jobs:
           uv pip install -e ".[dev]"
 
       - name: Run pytest
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+          GOOGLE_AI_API_KEY: test-api-key-for-ci
         run: uv run pytest tests/ --verbose
