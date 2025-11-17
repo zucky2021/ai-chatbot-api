@@ -13,10 +13,10 @@ class Conversation:
     ドメイン層のエンティティで、ビジネスロジックの基本単位
     """
 
-    id: int | None = None
     user_id: str
     session_id: str
     message: str
+    id: int | None = None
     response: str | None = None
     metadata: dict[str, Any] | None = None
     created_at: datetime | None = None
