@@ -34,7 +34,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --frozen --dev
+        run: |
+          uv sync --frozen
+          uv pip install -e ".[dev]"
 
       - name: Run pytest
-        run: uv run pytest --verbose
+        run: uv run pytest tests/ --verbose
