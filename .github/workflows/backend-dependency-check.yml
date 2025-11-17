@@ -7,7 +7,7 @@ on:
       - main
     paths: # 指定したパスのファイルが変更された場合のみ
       - 'backend/**'
-      - '.github/workflows/dependency-check.yml'
+      - '.github/workflows/backend-dependency-check.yml'
   schedule:
     # 毎週月曜2時UTC (JST: 11時)
     - cron: '0 2 * * 1'
@@ -37,7 +37,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --frozen --dev
+        run: |
+          uv sync --frozen
+          uv pip install -e ".[dev]"
 
       - name: Display dependency tree
         run: uv tree
