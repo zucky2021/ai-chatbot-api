@@ -4,10 +4,12 @@
 
 1. [セットアップ](./setup.md)
 2. [開発ツール](./tools/0-index.md)
-3. [ブランチ戦略](./branch.md)
-4. [コーディング規約](./coding-rules/0-index.md)
-5. [CI](./ci/0-index.md)
-6. [WebSocketチャット機能](./websocket.md)
+3. [パッケージ](./packages/0-index.md)
+4. [ブランチ戦略](./branch.md)
+5. [コーディング規約](./coding-rules/0-index.md)
+6. [CI](./ci/0-index.md)
+7. [WebSocketチャット機能](./websocket.md)
+8. [AIサービス比較](./ai-services-comparison.md.md)
 
 ## 🛠️ ローカル開発
 

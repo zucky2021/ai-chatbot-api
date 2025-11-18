@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -13,14 +13,14 @@ class Conversation:
     ドメイン層のエンティティで、ビジネスロジックの基本単位
     """
 
-    id: Optional[int]
     user_id: str
     session_id: str
     message: str
-    response: Optional[str]
-    metadata: Optional[Dict[str, Any]]
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
+    id: int | None = None
+    response: str | None = None
+    metadata: dict[str, Any] | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def __post_init__(self):
         """エンティティ作成後の初期化"""

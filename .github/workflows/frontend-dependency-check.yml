@@ -1,17 +1,12 @@
-name: Dependency Check
+name: Frontend Dependency Check
 
 on:
-  schedule:
-    # 毎週月曜日の午前10時（JST）に実行
-    - cron: '0 1 * * 1'
   pull_request:
-    branches: [main]
-    types: [opened, reopened, synchronize]
-  workflow_dispatch: # 手動実行を許可
-
-permissions:
-  contents: read
-  pull-requests: write
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-dependency-check.yml'
 
 jobs:
   # Frontend依存関係チェック（Node.js + pnpm）
@@ -72,56 +67,4 @@ jobs:
           echo "   cd frontend"
           echo "   pnpm outdated"
           echo "   pnpm update"
-          exit 1
-
-  # Backend依存関係チェック（Python + uv）
-  check-backend-dependencies:
-    runs-on: ubuntu-latest
-    name: Check Backend Dependencies (Python)
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: 'latest'
-
-      - name: Install dependencies
-        working-directory: backend
-        run: |
-          uv sync --frozen
-
-      - name: Check for outdated dependencies
-        id: outdated-check
-        working-directory: backend
-        run: |
-          echo "🔍 Checking for outdated dependencies..."
-
-          # uvで依存関係をチェック
-          uv pip list --outdated > outdated.txt 2>&1 || true
-
-          if [ -s outdated.txt ]; then
-            echo "⚠️ Found outdated dependencies:"
-            cat outdated.txt
-            echo "has_outdated=true" >> $GITHUB_OUTPUT
-          else
-            echo "✅ All dependencies are up to date"
-            echo "has_outdated=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Fail if outdated dependencies exist
-        if: steps.outdated-check.outputs.has_outdated == 'true'
-        run: |
-          echo "❌ Outdated dependencies detected in Backend!"
-          echo ""
-          echo "💡 Please update dependencies before merging:"
-          echo ""
-          echo "🔧 Update dependencies with uv:"
-          echo "   cd backend"
-          echo "   uv pip list --outdated"
-          echo "   # Edit pyproject.toml with new versions"
-          echo "   uv sync"
-          echo "   uv lock"
           exit 1

@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
 
 class SessionStatus(str, Enum):
@@ -25,10 +25,10 @@ class Session:
     session_id: str
     user_id: str
     status: SessionStatus
-    metadata: Optional[Dict[str, Any]]
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    expires_at: Optional[int]
+    metadata: dict[str, Any] | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    expires_at: int | None = None
 
     def __post_init__(self):
         """エンティティ作成後の初期化"""
@@ -58,7 +58,7 @@ class Session:
         """セッションがアクティブかどうか"""
         return self.status == SessionStatus.ACTIVE
 
-    def update_metadata(self, metadata: Dict[str, Any]) -> None:
+    def update_metadata(self, metadata: dict[str, Any]) -> None:
         """メタデータを更新"""
         if self.metadata is None:
             self.metadata = {}

@@ -38,8 +38,6 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
     onError,
     onOpen,
     onClose,
-    autoReconnect = true,
-    reconnectInterval = 3000,
   } = options
 
   const [isConnected, setIsConnected] = useState(false)
@@ -190,17 +188,7 @@ export function useWebSocket(options: UseWebSocketOptions): UseWebSocketReturn {
       setError(error)
       onError?.(error)
     }
-  }, [
-    sessionId,
-    userId,
-    apiUrl,
-    onMessage,
-    onError,
-    onOpen,
-    onClose,
-    autoReconnect,
-    reconnectInterval,
-  ])
+  }, [sessionId, userId, apiUrl, onMessage, onError, onOpen, onClose])
 
   const sendMessage = useCallback(
     (message: string, metadata?: Record<string, unknown>) => {

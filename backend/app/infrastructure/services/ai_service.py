@@ -1,9 +1,10 @@
-"""Google AI Studioサービス実装"""
+"""Google AI Studioサービス実装（LangChain使用）"""
 
 from collections.abc import AsyncGenerator
 import logging
 
-import google.generativeai as genai
+from langchain_core.messages import HumanMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
@@ -13,40 +14,22 @@ logger = logging.getLogger(__name__)
 
 
 class GoogleAIService(IAIService):
-    """Google AI Studioサービス実装"""
+    """Google AI Studioサービス実装（LangChain使用）"""
 
     def __init__(self):
-        genai.configure(api_key=settings.GOOGLE_AI_API_KEY)
         # モデル名は設定から取得（デフォルト: gemini-flash-latest）
         model_name = settings.GOOGLE_AI_MODEL
         logger.info(f"Google AIモデルを初期化: {model_name}")
 
-        # 利用可能なモデルを確認（INFOレベルで出力して確認しやすくする）
-        try:
-            all_models = list(genai.list_models())
-            # generateContentをサポートするモデルのみをフィルタリング
-            supported_models = [
-                m.name
-                for m in all_models
-                if "generateContent" in m.supported_generation_methods
-            ]
-            logger.info(
-                f"利用可能なモデル（generateContent対応）: {supported_models}"
-            )
-            model_names = {m.name for m in all_models}
-            normalized_names = {name.split("/", 1)[-1] for name in model_names}
-            if (
-                model_name not in model_names
-                and model_name not in normalized_names
-            ):
-                logger.warning(
-                    f"指定されたモデル '{model_name}' が利用可能なモデルリストにありません。"
-                    f"利用可能なモデル: {model_names} または {normalized_names}"
-                )
-        except Exception as e:
-            logger.warning(f"利用可能なモデルの取得に失敗: {str(e)}")
+        # ChatGoogleGenerativeAIを初期化
+        self._llm = ChatGoogleGenerativeAI(
+            model=model_name,
+            google_api_key=settings.GOOGLE_AI_API_KEY,
+            temperature=0.7,
+            convert_system_message_to_human=True,
+        )
 
-        self._model = genai.GenerativeModel(model_name)
+        logger.info("Google AIサービスが初期化されました（LangChain使用）")
 
     async def generate_response(
         self, message: Message, context: str = ""
@@ -54,8 +37,9 @@ class GoogleAIService(IAIService):
         """AIレスポンスを生成"""
         try:
             prompt = self._build_prompt(message, context)
-            response = await self._model.generate_content_async(prompt)
-            return response.text
+            messages = [HumanMessage(content=prompt)]
+            response = await self._llm.ainvoke(messages)
+            return response.content
         except Exception as e:
             raise RuntimeError(f"AIレスポンス生成エラー: {str(e)}")
 
@@ -65,25 +49,14 @@ class GoogleAIService(IAIService):
         """AIレスポンスをストリームで生成"""
         try:
             prompt = self._build_prompt(message, context)
-            response = await self._model.generate_content_async(
-                prompt, stream=True
-            )
+            messages = [HumanMessage(content=prompt)]
 
-            async for chunk in response:
-                if chunk.text:
-                    yield chunk.text
+            async for chunk in self._llm.astream(messages):
+                if chunk.content:
+                    yield chunk.content
         except Exception as e:
             error_msg = str(e)
-            # モデルが見つからない場合の詳細なエラーメッセージ
-            if "404" in error_msg and "model" in error_msg.lower():
-                try:
-                    available_models = [m.name for m in genai.list_models()]
-                    logger.error(
-                        f"モデル '{settings.GOOGLE_AI_MODEL}' が見つかりません。"
-                        f"利用可能なモデル: {available_models}"
-                    )
-                except Exception:
-                    pass
+            logger.error(f"AIストリーム生成エラー: {error_msg}")
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")
 
     def _build_prompt(self, message: Message, context: str = "") -> str:
