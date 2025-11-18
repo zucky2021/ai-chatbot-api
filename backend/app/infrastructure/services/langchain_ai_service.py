@@ -1,7 +1,6 @@
 """LangChain AIサービス実装"""
 
 from collections.abc import AsyncGenerator
-import logging
 
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -11,8 +10,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class LangChainAIService(IAIService):
@@ -21,7 +21,7 @@ class LangChainAIService(IAIService):
     def __init__(self):
         """LangChain AIサービスを初期化"""
         model_name = settings.GOOGLE_AI_MODEL
-        logger.info(f"LangChain AIモデルを初期化: {model_name}")
+        logger.info("langchain_ai_model_initializing", model_name=model_name)
 
         # ChatGoogleGenerativeAIを初期化
         self._llm = ChatGoogleGenerativeAI(
@@ -45,7 +45,10 @@ class LangChainAIService(IAIService):
         self._max_tokens = settings.LANGCHAIN_MAX_TOKENS
 
         logger.info(
-            f"LangChain AIサービスが初期化されました (メモリタイプ: {self._memory_type})"
+            "langchain_ai_service_initialized",
+            model_name=model_name,
+            memory_type=self._memory_type,
+            max_tokens=self._max_tokens,
         )
 
     async def generate_response(
@@ -80,7 +83,12 @@ class LangChainAIService(IAIService):
                 else str(response)
             )
         except Exception as e:
-            logger.error(f"LangChain AIレスポンス生成エラー: {str(e)}")
+            logger.error(
+                "langchain_ai_response_generation_error",
+                error=str(e),
+                message_role=message.role,
+                exc_info=True,
+            )
             raise RuntimeError(f"AIレスポンス生成エラー: {str(e)}")
 
     async def generate_stream(
@@ -113,7 +121,12 @@ class LangChainAIService(IAIService):
                 history.add_ai_message(full_response)
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"LangChain AIストリーム生成エラー: {error_msg}")
+            logger.error(
+                "langchain_ai_stream_generation_error",
+                error=error_msg,
+                message_role=message.role,
+                exc_info=True,
+            )
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")
 
     def _build_history_from_context(
