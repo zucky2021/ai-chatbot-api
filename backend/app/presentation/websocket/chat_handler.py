@@ -3,8 +3,6 @@
 import asyncio
 from datetime import datetime
 import json
-import logging
-import traceback
 from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect, status
@@ -17,11 +15,11 @@ from app.infrastructure.dependencies import (
     get_conversation_repository,
     get_session_repository,
 )
+from app.infrastructure.logging import get_logger
 from app.presentation.websocket.connection_manager import connection_manager
 
 # ロガーの設定
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = get_logger(__name__)
 
 
 async def handle_websocket_chat(
@@ -47,7 +45,9 @@ async def handle_websocket_chat(
 
     try:
         # セッションの存在確認（リトライ付き）
-        logger.info(f"セッション検証開始: session_id={session_id}")
+        logger.info(
+            "websocket_session_validation_started", session_id=session_id
+        )
         session_repo = get_session_repository()
         session = None
         max_retries = 3
@@ -57,19 +57,26 @@ async def handle_websocket_chat(
             session = await session_repo.get_by_id(session_id)
             if session:
                 logger.info(
-                    f"セッションが見つかりました: session_id={session_id}, status={session.status}"
+                    "websocket_session_found",
+                    session_id=session_id,
+                    status=session.status.value,
                 )
                 break
             if attempt < max_retries - 1:
                 logger.warning(
-                    f"セッションが見つかりません (試行 {attempt + 1}/{max_retries}): {session_id}. "
-                    f"{retry_delay}秒後に再試行します。"
+                    "websocket_session_not_found_retrying",
+                    session_id=session_id,
+                    attempt=attempt + 1,
+                    max_retries=max_retries,
+                    retry_delay=retry_delay,
                 )
                 await asyncio.sleep(retry_delay)
 
         if not session:
             logger.error(
-                f"セッションが見つかりません（全試行失敗）: session_id={session_id}"
+                "websocket_session_not_found",
+                session_id=session_id,
+                message="全試行失敗",
             )
             try:
                 await connection_manager.send_personal_message(
@@ -105,7 +112,7 @@ async def handle_websocket_chat(
             return
 
         # 依存性を注入
-        logger.debug(f"依存性を注入: session_id={session_id}")
+        logger.debug("websocket_dependencies_injected", session_id=session_id)
         conversation_repo = await get_conversation_repository(db)
         ai_service = get_ai_service()
         cache_service = get_cache_service()
@@ -119,10 +126,10 @@ async def handle_websocket_chat(
             },
             websocket,
         )
-        logger.info(f"接続成功通知を送信: session_id={session_id}")
+        logger.info("websocket_connection_notified", session_id=session_id)
 
         # メインループ（FastAPI公式ドキュメントに従って、try-except WebSocketDisconnectで囲む）
-        logger.info(f"メッセージ受信ループ開始: session_id={session_id}")
+        logger.info("websocket_message_loop_started", session_id=session_id)
         try:
             while True:
                 # クライアントからのメッセージを受信
@@ -158,11 +165,13 @@ async def handle_websocket_chat(
         except WebSocketDisconnect:
             # クライアントが接続を切断した場合（正常な切断）
             logger.info(
-                f"WebSocket接続が切断されました: session_id={session_id}, "
-                f"user_id={user_id}"
+                "websocket_disconnected",
+                session_id=session_id,
+                user_id=user_id,
+                message="正常な切断",
             )
         except json.JSONDecodeError as e:
-            logger.warning(f"無効なJSON形式: {str(e)}")
+            logger.warning("websocket_invalid_json", error=str(e))
             try:
                 await connection_manager.send_personal_message(
                     {
@@ -175,10 +184,11 @@ async def handle_websocket_chat(
             except Exception:
                 pass  # 接続が閉じられている場合は無視
         except Exception as e:
-            error_traceback = traceback.format_exc()
             logger.error(
-                f"メッセージ処理エラー: session_id={session_id}, "
-                f"user_id={user_id}, error={str(e)}\n{error_traceback}",
+                "websocket_message_processing_error",
+                session_id=session_id,
+                user_id=user_id,
+                error=str(e),
                 exc_info=True,
             )
             try:
@@ -196,22 +206,28 @@ async def handle_websocket_chat(
     except WebSocketDisconnect:
         # クライアントが接続を切断した場合（正常な切断）
         logger.info(
-            f"WebSocket接続が切断されました: session_id={session_id}, "
-            f"user_id={user_id}"
+            "websocket_disconnected",
+            session_id=session_id,
+            user_id=user_id,
+            message="正常な切断",
         )
     except Exception as e:
-        error_traceback = traceback.format_exc()
         logger.error(
-            f"WebSocketハンドラーエラー: session_id={session_id}, "
-            f"user_id={user_id}, error={str(e)}\n{error_traceback}",
+            "websocket_handler_error",
+            session_id=session_id,
+            user_id=user_id,
+            error=str(e),
             exc_info=True,
         )
     finally:
         # 接続を切断
         connection_manager.disconnect(websocket, session_id)
         logger.debug(
-            f"WebSocket接続をクリーンアップ: session_id={session_id}, "
-            f"残り接続数={connection_manager.get_connection_count(session_id)}"
+            "websocket_connection_cleanup",
+            session_id=session_id,
+            remaining_connections=connection_manager.get_connection_count(
+                session_id
+            ),
         )
 
 
@@ -343,7 +359,6 @@ async def _handle_message(
         )
 
     except Exception as e:
-        error_traceback = traceback.format_exc()
         error_message = str(e)
 
         # モデル名関連のエラーの場合は、より分かりやすいメッセージを返す
@@ -355,9 +370,11 @@ async def _handle_message(
             user_friendly_message = "メッセージ処理中にエラーが発生しました。しばらくしてから再試行してください。"
 
         logger.error(
-            f"メッセージ処理エラー: session_id={session_id}, "
-            f"user_id={user_id}, message_length={len(message_content)}, "
-            f"error={error_message}\n{error_traceback}",
+            "websocket_message_error",
+            session_id=session_id,
+            user_id=user_id,
+            message_length=len(message_content),
+            error=error_message,
             exc_info=True,
         )
         await connection_manager.send_personal_message(
