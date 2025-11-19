@@ -1,13 +1,12 @@
 """Redisキャッシュサービス実装"""
 
-import logging
-
 import redis.asyncio as redis
 
 from app.domain.services import ICacheService
 from app.infrastructure.config import settings
+from app.infrastructure.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RedisCacheService(ICacheService):
@@ -32,8 +31,7 @@ class RedisCacheService(ICacheService):
             return value
         except Exception as e:
             # キャッシュエラーはログに記録するが、例外は発生させない
-            print(f"キャッシュ取得エラー: {str(e)}")
-            logger.error(f"キャッシュ取得エラー: {str(e)}", exc_info=True)
+            logger.error("cache_get_error", key=key, error=str(e), exc_info=True)
             return None
 
     async def set(self, key: str, value: str, ttl: int = 3600) -> None:
@@ -43,7 +41,7 @@ class RedisCacheService(ICacheService):
             await client.setex(key, ttl, value)
         except Exception as e:
             # キャッシュエラーはログに記録するが、例外は発生させない
-            print(f"キャッシュ設定エラー: {str(e)}")
+            logger.error("cache_set_error", key=key, ttl=ttl, error=str(e), exc_info=True)
 
     async def delete(self, key: str) -> None:
         """キャッシュから値を削除"""
@@ -51,7 +49,7 @@ class RedisCacheService(ICacheService):
             client = await self._get_redis()
             await client.delete(key)
         except Exception as e:
-            print(f"キャッシュ削除エラー: {str(e)}")
+            logger.error("cache_delete_error", key=key, error=str(e), exc_info=True)
 
     async def exists(self, key: str) -> bool:
         """キャッシュキーの存在確認"""
@@ -59,7 +57,7 @@ class RedisCacheService(ICacheService):
             client = await self._get_redis()
             return await client.exists(key) > 0
         except Exception as e:
-            print(f"キャッシュ存在確認エラー: {str(e)}")
+            logger.error("cache_exists_error", key=key, error=str(e), exc_info=True)
             return False
 
     async def close(self) -> None:

@@ -1,7 +1,6 @@
 """Google AI Studioサービス実装（LangChain使用）"""
 
 from collections.abc import AsyncGenerator
-import logging
 
 from langchain_core.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -9,8 +8,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class GoogleAIService(IAIService):
@@ -19,7 +19,7 @@ class GoogleAIService(IAIService):
     def __init__(self):
         # モデル名は設定から取得（デフォルト: gemini-flash-latest）
         model_name = settings.GOOGLE_AI_MODEL
-        logger.info(f"Google AIモデルを初期化: {model_name}")
+        logger.info("google_ai_model_initializing", model_name=model_name)
 
         # ChatGoogleGenerativeAIを初期化
         self._llm = ChatGoogleGenerativeAI(
@@ -29,7 +29,7 @@ class GoogleAIService(IAIService):
             convert_system_message_to_human=True,
         )
 
-        logger.info("Google AIサービスが初期化されました（LangChain使用）")
+        logger.info("google_ai_service_initialized", model_name=model_name)
 
     async def generate_response(
         self, message: Message, context: str = ""
@@ -56,7 +56,12 @@ class GoogleAIService(IAIService):
                     yield chunk.content
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"AIストリーム生成エラー: {error_msg}")
+            logger.error(
+                "ai_stream_generation_error",
+                error=error_msg,
+                message_role=message.role,
+                exc_info=True,
+            )
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")
 
     def _build_prompt(self, message: Message, context: str = "") -> str:

@@ -1,7 +1,6 @@
 """LangGraph AIサービス実装"""
 
 from collections.abc import AsyncGenerator
-import logging
 from typing import Annotated, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
@@ -13,8 +12,9 @@ from langgraph.graph.message import add_messages
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class GraphState(TypedDict):
@@ -34,7 +34,7 @@ class LangGraphAIService(IAIService):
     def __init__(self):
         """LangGraph AIサービスを初期化"""
         model_name = settings.GOOGLE_AI_MODEL
-        logger.info(f"LangGraph AIモデルを初期化: {model_name}")
+        logger.info("langgraph_ai_model_initializing", model_name=model_name)
 
         # ChatGoogleGenerativeAIを初期化
         self._llm = ChatGoogleGenerativeAI(
@@ -55,7 +55,7 @@ class LangGraphAIService(IAIService):
         # グラフを構築
         self._graph = self._build_graph()
 
-        logger.info("LangGraph AIサービスが初期化されました")
+        logger.info("langgraph_ai_service_initialized", model_name=model_name)
 
     def _build_graph(self) -> StateGraph:
         """グラフを構築"""
@@ -90,7 +90,7 @@ class LangGraphAIService(IAIService):
 
     async def _input_node(self, state: GraphState) -> GraphState:
         """入力ノード: ユーザーメッセージの受信と前処理"""
-        logger.debug(f"入力ノード: session_id={state['session_id']}")
+        logger.debug("input_node", session_id=state["session_id"])
         return state
 
     async def _intent_classifier(self, state: GraphState) -> GraphState:
@@ -120,7 +120,7 @@ class LangGraphAIService(IAIService):
         else:
             state["next_action"] = "normal"
 
-        logger.debug(f"意図判定: {state['next_action']}")
+        logger.debug("intent_classification", next_action=state["next_action"])
         return state
 
     def _route_after_intent(self, state: GraphState) -> str:
@@ -144,7 +144,7 @@ class LangGraphAIService(IAIService):
 
             logger.debug("通常会話ノード: レスポンス生成完了")
         except Exception as e:
-            logger.error(f"通常会話ノードエラー: {str(e)}")
+            logger.error("normal_chat_node_error", error=str(e), exc_info=True)
             state["messages"].append(
                 AIMessage(content=f"エラーが発生しました: {str(e)}")
             )
@@ -154,18 +154,18 @@ class LangGraphAIService(IAIService):
     async def _rag_chat(self, state: GraphState) -> GraphState:
         """RAGノード: ベクトル検索を使用した情報検索（将来の実装）"""
         # 現在は通常会話と同じ処理
-        logger.info("RAGノード: 将来の実装予定")
+        logger.info("rag_node_placeholder", message="将来の実装予定")
         return await self._normal_chat(state)
 
     async def _tool_execution(self, state: GraphState) -> GraphState:
         """ツール実行ノード: 外部ツールの実行（将来の実装）"""
         # 現在は通常会話と同じ処理
-        logger.info("ツール実行ノード: 将来の実装予定")
+        logger.info("tool_node_placeholder", message="将来の実装予定")
         return await self._normal_chat(state)
 
     async def _output_node(self, state: GraphState) -> GraphState:
         """出力ノード: レスポンスの最終処理"""
-        logger.debug("出力ノード: 処理完了")
+        logger.debug("output_node_completed")
         return state
 
     async def generate_response(
@@ -204,7 +204,11 @@ class LangGraphAIService(IAIService):
 
             return "レスポンスを生成できませんでした。"
         except Exception as e:
-            logger.error(f"LangGraph AIレスポンス生成エラー: {str(e)}")
+            logger.error(
+                "langgraph_ai_response_generation_error",
+                error=str(e),
+                exc_info=True,
+            )
             raise RuntimeError(f"AIレスポンス生成エラー: {str(e)}")
 
     async def generate_stream(
@@ -259,7 +263,11 @@ class LangGraphAIService(IAIService):
                     yield ai_messages[-1].content
         except Exception as e:
             error_msg = str(e)
-            logger.error(f"LangGraph AIストリーム生成エラー: {error_msg}")
+            logger.error(
+                "langgraph_ai_stream_generation_error",
+                error=error_msg,
+                exc_info=True,
+            )
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")
 
     def _build_messages_from_context(

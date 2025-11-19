@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     API_TITLE: str = "AI Chatbot API"
     API_VERSION: str = "1.0.0"
 
+    # Logging Settings
+    LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    JSON_LOGS: bool = True  # 本番環境ではTrue、開発環境ではFalse
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8"
     )

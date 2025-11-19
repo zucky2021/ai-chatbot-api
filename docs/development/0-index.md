@@ -10,6 +10,7 @@
 6. [CI](./ci/0-index.md)
 7. [WebSocketチャット機能](./websocket.md)
 8. [AIサービス比較](./ai-services-comparison.md.md)
+9. [構造化ログとエラーハンドリング](./logging-and-error-handling.md)
 
 ## 🛠️ ローカル開発
 

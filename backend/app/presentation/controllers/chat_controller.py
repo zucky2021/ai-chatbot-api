@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.database import get_db
@@ -12,6 +12,9 @@ from app.infrastructure.dependencies import (
     get_conversation_repository,
     get_session_repository,
 )
+from app.infrastructure.logging import get_logger
+from app.presentation.middleware.error_handler import AppError
+from app.presentation.models.error import ErrorCode
 from app.usecase.dto.chat import (
     ConversationHistoryResponse,
     CreateSessionRequest,
@@ -24,6 +27,8 @@ from app.usecase.use_cases.chat import (
     GetConversationHistoryUseCase,
     SendMessageUseCase,
 )
+
+logger = get_logger(__name__)
 
 
 class ChatController:
@@ -46,6 +51,13 @@ class ChatController:
         Returns:
             メッセージ送信レスポンス
         """
+        logger.info(
+            "send_message_started",
+            user_id=user_id,
+            session_id=request.session_id,
+            message_length=len(request.message),
+        )
+
         try:
             # 依存性を注入
             conversation_repo = await get_conversation_repository(db)
@@ -68,6 +80,13 @@ class ChatController:
                 metadata=request.metadata,
             )
 
+            logger.info(
+                "send_message_completed",
+                user_id=user_id,
+                session_id=request.session_id,
+                conversation_id=conversation.id,
+            )
+
             return SendMessageResponse(
                 conversation_id=conversation.id,
                 message=conversation.message,
@@ -76,17 +95,41 @@ class ChatController:
                 created_at=conversation.created_at or conversation.updated_at,
             )
         except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+            logger.warning(
+                "send_message_validation_error",
+                user_id=user_id,
+                session_id=request.session_id,
+                error=str(e),
+            )
+            raise AppError(
+                error_code=ErrorCode.VALIDATION_ERROR,
+                message=str(e),
+                details={"user_id": user_id, "session_id": request.session_id},
             )
         except RuntimeError as e:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+            logger.warning(
+                "send_message_not_found",
+                user_id=user_id,
+                session_id=request.session_id,
+                error=str(e),
+            )
+            raise AppError(
+                error_code=ErrorCode.INVALID_SESSION,
+                message=str(e),
+                details={"user_id": user_id, "session_id": request.session_id},
             )
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"サーバーエラー: {str(e)}",
+            logger.error(
+                "send_message_error",
+                user_id=user_id,
+                session_id=request.session_id,
+                error=str(e),
+                exc_info=True,
+            )
+            raise AppError(
+                error_code=ErrorCode.INTERNAL_ERROR,
+                message="メッセージの送信に失敗しました",
+                details={"user_id": user_id, "session_id": request.session_id},
             )
 
     @staticmethod
@@ -104,6 +147,8 @@ class ChatController:
         Returns:
             セッション作成レスポンス
         """
+        logger.info("create_session_started", user_id=user_id)
+
         try:
             session_repo = get_session_repository()
             use_case = CreateSessionUseCase(session_repository=session_repo)
@@ -117,19 +162,39 @@ class ChatController:
                 metadata=request.metadata,
             )
 
+            logger.info(
+                "create_session_completed",
+                user_id=user_id,
+                session_id=session.session_id,
+            )
+
             return CreateSessionResponse(
                 session_id=session.session_id,
                 status=session.status.value,
                 created_at=session.created_at or session.updated_at,
             )
         except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+            logger.warning(
+                "create_session_validation_error",
+                user_id=user_id,
+                error=str(e),
+            )
+            raise AppError(
+                error_code=ErrorCode.VALIDATION_ERROR,
+                message=str(e),
+                details={"user_id": user_id},
             )
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"サーバーエラー: {str(e)}",
+            logger.error(
+                "create_session_error",
+                user_id=user_id,
+                error=str(e),
+                exc_info=True,
+            )
+            raise AppError(
+                error_code=ErrorCode.INTERNAL_ERROR,
+                message="セッションの作成に失敗しました",
+                details={"user_id": user_id},
             )
 
     @staticmethod
@@ -149,6 +214,10 @@ class ChatController:
         Returns:
             会話履歴レスポンス
         """
+        logger.info(
+            "get_history_started", user_id=user_id, session_id=session_id
+        )
+
         try:
             conversation_repo = await get_conversation_repository(db)
             use_case = GetConversationHistoryUseCase(
@@ -156,6 +225,13 @@ class ChatController:
             )
 
             conversations = await use_case.execute(session_id=session_id)
+
+            logger.info(
+                "get_history_completed",
+                user_id=user_id,
+                session_id=session_id,
+                count=len(conversations),
+            )
 
             return ConversationHistoryResponse(
                 conversations=[
@@ -177,7 +253,15 @@ class ChatController:
                 ]
             )
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"サーバーエラー: {str(e)}",
+            logger.error(
+                "get_history_error",
+                user_id=user_id,
+                session_id=session_id,
+                error=str(e),
+                exc_info=True,
+            )
+            raise AppError(
+                error_code=ErrorCode.INTERNAL_ERROR,
+                message="会話履歴の取得に失敗しました",
+                details={"user_id": user_id, "session_id": session_id},
             )
