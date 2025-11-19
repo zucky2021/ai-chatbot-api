@@ -74,4 +74,3 @@ ERROR_CODE_TO_HTTP_STATUS = {
     ErrorCode.FORBIDDEN: 403,
     ErrorCode.INTERNAL_ERROR: 500,
 }
-

@@ -126,7 +126,9 @@ def configure_logging(log_level: str = "INFO", json_logs: bool = True) -> None:
 
     # uvicornのログレベルも設定
     logging.getLogger("uvicorn").setLevel(getattr(logging, log_level.upper()))
-    logging.getLogger("uvicorn.access").setLevel(getattr(logging, log_level.upper()))
+    logging.getLogger("uvicorn.access").setLevel(
+        getattr(logging, log_level.upper())
+    )
 
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
@@ -140,4 +142,3 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
         構造化ロガー
     """
     return structlog.get_logger(name)
-
