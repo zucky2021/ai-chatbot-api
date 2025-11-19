@@ -24,7 +24,9 @@ class StructlogHandler(logging.Handler):
             record: ログレコード
         """
         # ログレベルに応じて適切なメソッドを呼び出す
-        log_method = getattr(self.logger, record.levelname.lower(), self.logger.info)
+        log_method = getattr(
+            self.logger, record.levelname.lower(), self.logger.info
+        )
 
         # 追加のコンテキスト情報を抽出
         extra = {
@@ -70,4 +72,3 @@ def configure_langchain_logging() -> None:
         logger.setLevel(logging.INFO)
         # 親ロガーへの伝播を無効化（重複を防ぐ）
         logger.propagate = False
-

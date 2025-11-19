@@ -31,7 +31,9 @@ class RedisCacheService(ICacheService):
             return value
         except Exception as e:
             # キャッシュエラーはログに記録するが、例外は発生させない
-            logger.error("cache_get_error", key=key, error=str(e), exc_info=True)
+            logger.error(
+                "cache_get_error", key=key, error=str(e), exc_info=True
+            )
             return None
 
     async def set(self, key: str, value: str, ttl: int = 3600) -> None:
@@ -41,7 +43,13 @@ class RedisCacheService(ICacheService):
             await client.setex(key, ttl, value)
         except Exception as e:
             # キャッシュエラーはログに記録するが、例外は発生させない
-            logger.error("cache_set_error", key=key, ttl=ttl, error=str(e), exc_info=True)
+            logger.error(
+                "cache_set_error",
+                key=key,
+                ttl=ttl,
+                error=str(e),
+                exc_info=True,
+            )
 
     async def delete(self, key: str) -> None:
         """キャッシュから値を削除"""
@@ -49,7 +57,9 @@ class RedisCacheService(ICacheService):
             client = await self._get_redis()
             await client.delete(key)
         except Exception as e:
-            logger.error("cache_delete_error", key=key, error=str(e), exc_info=True)
+            logger.error(
+                "cache_delete_error", key=key, error=str(e), exc_info=True
+            )
 
     async def exists(self, key: str) -> bool:
         """キャッシュキーの存在確認"""
@@ -57,7 +67,9 @@ class RedisCacheService(ICacheService):
             client = await self._get_redis()
             return await client.exists(key) > 0
         except Exception as e:
-            logger.error("cache_exists_error", key=key, error=str(e), exc_info=True)
+            logger.error(
+                "cache_exists_error", key=key, error=str(e), exc_info=True
+            )
             return False
 
     async def close(self) -> None:
