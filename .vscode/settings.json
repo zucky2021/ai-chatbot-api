@@ -18,5 +18,5 @@
     }
   },
   "ruff.organizeImports": true,
-  "cSpell.words": ["APIDOG", "coderabbit", "localstack", "usecase", "VITE"]
+  "cSpell.words": ["APIDOG", "coderabbit", "langfuse", "localstack", "usecase", "VITE"]
 }

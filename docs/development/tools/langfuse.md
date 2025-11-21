@@ -103,77 +103,37 @@ LangFuseを部分的に導入する方法：
 
 この方法なら、開発効率を上げつつ、本番環境のシンプルさを維持できます。
 
-## 統合方法（参考）
+## 統合方法
 
-### LangChainとの統合例
+このプロジェクトでは、LangChainとLangGraphの両方のサービスにLangFuseが統合されています。
 
-```python
-from langfuse.callback import CallbackHandler
-from langchain.callbacks import LangchainCallbackHandler
+### 実装ファイル
 
-# LangFuseコールバックの初期化
-langfuse_handler = CallbackHandler(
-    public_key="your-public-key",
-    secret_key="your-secret-key",
-    host="https://cloud.langfuse.com"  # またはセルフホスティングURL
-)
+- **設定**: `backend/app/infrastructure/config.py`
+- **ハンドラー**: `backend/app/infrastructure/langfuse_handler.py`
+- **LangChain統合**: `backend/app/infrastructure/services/langchain_ai_service.py`
+- **LangGraph統合**: `backend/app/infrastructure/services/langgraph_ai_service.py`
 
-# LangChainチェーンにコールバックを追加
-chain = prompt | llm
-response = await chain.ainvoke(
-    {"input": message.content},
-    config={"callbacks": [langfuse_handler]}
-)
-```
+### 使用方法
 
-### LangGraphとの統合例
+環境変数を設定してアプリケーションを起動すると、自動的にLangFuseにトレースが送信されます。
 
-<!-- FIXME:実装が完了したらソースコードの相対パスに変更 -->
+- **LangChainAIService**: `generate_response()`と`generate_stream()`の両方で自動トレース
+- **LangGraphAIService**: グラフの実行全体が自動トレース
 
-```python
-from langfuse.decorators import langfuse_context, observe
+### 無効化
 
-# デコレータを使用
-@observe()
-async def your_node(state: GraphState):
-    # ノードの処理
-    pass
+LangFuseを無効にする場合は、環境変数を設定しないか、`LANGFUSE_ENABLED=false`に設定してください。
 
-# またはコンテキストマネージャーを使用
-with langfuse_context():
-    result = await graph.ainvoke(state)
-```
+### コード例（参考）
 
-## セットアップ（セルフホスティング）
+#### LangChainとの統合
 
-### Docker Composeでの起動
+- [LangChainAIService](/backend/app/infrastructure/services/langchain_ai_service.py)
 
-```yaml
-version: '3.8'
-services:
-  langfuse:
-    image: langfuse/langfuse:latest
-    ports:
-      - '3000:3000'
-    environment:
-      - DATABASE_URL=postgresql://user:password@postgres:5432/langfuse
-      - NEXTAUTH_SECRET=your-secret
-      - SALT=your-salt
-    depends_on:
-      - postgres
+#### LangGraphとの統合
 
-  postgres:
-    image: postgres:15
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=langfuse
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-```
+- [LangGraphAIService](/backend/app/infrastructure/services/langgraph_ai_service.py)
 
 ## 参考リンク
 

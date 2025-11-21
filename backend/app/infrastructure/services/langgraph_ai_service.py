@@ -12,6 +12,7 @@ from langgraph.graph.message import add_messages
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.langfuse_handler import create_langfuse_handler
 from app.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
@@ -55,7 +56,14 @@ class LangGraphAIService(IAIService):
         # グラフを構築
         self._graph = self._build_graph()
 
-        logger.info("langgraph_ai_service_initialized", model_name=model_name)
+        # LangFuseコールバックハンドラーを初期化
+        self._langfuse_handler = create_langfuse_handler()
+
+        logger.info(
+            "langgraph_ai_service_initialized",
+            model_name=model_name,
+            langfuse_enabled=settings.LANGFUSE_ENABLED,
+        )
 
     def _build_graph(self) -> StateGraph:
         """グラフを構築"""
@@ -192,8 +200,13 @@ class LangGraphAIService(IAIService):
             # ユーザーメッセージを追加
             state["messages"].append(HumanMessage(content=message.content))
 
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
+
             # グラフを実行
-            result = await self._graph.ainvoke(state)
+            result = await self._graph.ainvoke(state, config=config)
 
             # 最後のAIメッセージを取得
             ai_messages = [
@@ -235,9 +248,14 @@ class LangGraphAIService(IAIService):
             # ユーザーメッセージを追加
             state["messages"].append(HumanMessage(content=message.content))
 
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
+
             # グラフをストリーミング実行
             full_response = ""
-            async for chunk in self._graph.astream(state):
+            async for chunk in self._graph.astream(state, config=config):
                 # 各ノードの出力を処理
                 for node_name, node_output in chunk.items():
                     if node_name == "normal_chat" or node_name == "rag_chat":
@@ -253,7 +271,7 @@ class LangGraphAIService(IAIService):
             # 最終的なレスポンスを確認
             if not full_response:
                 # ストリーミングで取得できなかった場合は通常実行
-                result = await self._graph.ainvoke(state)
+                result = await self._graph.ainvoke(state, config=config)
                 ai_messages = [
                     msg
                     for msg in result["messages"]

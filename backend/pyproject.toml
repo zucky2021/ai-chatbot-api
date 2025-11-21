@@ -29,6 +29,7 @@ dependencies = [
     "langchain-google-genai>=3.0.2",
     # LangGraph
     "langgraph>=1.0.3",
+    "langfuse>=3.10.1",
 ]
 
 [project.optional-dependencies]
