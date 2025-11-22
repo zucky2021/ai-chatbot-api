@@ -9,6 +9,7 @@ from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
 from app.infrastructure.logging import get_logger
+from app.infrastructure.services.chunk_utils import normalize_chunk_content
 
 logger = get_logger(__name__)
 
@@ -53,7 +54,13 @@ class GoogleAIService(IAIService):
 
             async for chunk in self._llm.astream(messages):
                 if chunk.content:
-                    yield chunk.content
+                    content = normalize_chunk_content(chunk.content)
+
+                    # 空のコンテンツはスキップ
+                    if not content:
+                        continue
+
+                    yield content
         except Exception as e:
             error_msg = str(e)
             logger.error(

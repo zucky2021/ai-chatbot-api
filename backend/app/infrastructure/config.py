@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     LANGGRAPH_ENABLED: bool = False
     LANGGRAPH_DEBUG: bool = False
 
+    # LangFuse Settings
+    LANGFUSE_PUBLIC_KEY: str | None = None
+    LANGFUSE_SECRET_KEY: str | None = None
+    LANGFUSE_BASE_URL: str = "https://cloud.langfuse.com"
+    LANGFUSE_ENABLED: bool = False
+
     # API Settings
     API_TITLE: str = "AI Chatbot API"
     API_VERSION: str = "1.0.0"

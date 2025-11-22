@@ -10,7 +10,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.langfuse_handler import create_langfuse_handler
 from app.infrastructure.logging import get_logger
+from app.infrastructure.services.chunk_utils import normalize_chunk_content
 
 logger = get_logger(__name__)
 
@@ -44,11 +46,15 @@ class LangChainAIService(IAIService):
         self._memory_type = settings.LANGCHAIN_MEMORY_TYPE
         self._max_tokens = settings.LANGCHAIN_MAX_TOKENS
 
+        # LangFuseコールバックハンドラーを初期化
+        self._langfuse_handler = create_langfuse_handler()
+
         logger.info(
             "langchain_ai_service_initialized",
             model_name=model_name,
             memory_type=self._memory_type,
             max_tokens=self._max_tokens,
+            langfuse_enabled=settings.LANGFUSE_ENABLED,
         )
 
     async def generate_response(
@@ -65,9 +71,14 @@ class LangChainAIService(IAIService):
             # メッセージ履歴を取得
             messages = history.messages if hasattr(history, "messages") else []
 
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
+
             # チェーンを実行
             response = await chain.ainvoke(
-                {"input": message.content, "history": messages}
+                {"input": message.content, "history": messages}, config=config
             )
 
             # メモリに会話を保存
@@ -105,13 +116,23 @@ class LangChainAIService(IAIService):
             # メッセージ履歴を取得
             messages = history.messages if hasattr(history, "messages") else []
 
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
+
             # ストリーミングでレスポンスを取得
             full_response = ""
             async for chunk in chain.astream(
-                {"input": message.content, "history": messages}
+                {"input": message.content, "history": messages}, config=config
             ):
                 if hasattr(chunk, "content") and chunk.content:
-                    content = chunk.content
+                    content = normalize_chunk_content(chunk.content)
+
+                    # 空のコンテンツはスキップ
+                    if not content:
+                        continue
+
                     full_response += content
                     yield content
 

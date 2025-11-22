@@ -1,7 +1,7 @@
 """LangGraph AIサービス実装"""
 
 from collections.abc import AsyncGenerator
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -12,7 +12,9 @@ from langgraph.graph.message import add_messages
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
+from app.infrastructure.langfuse_handler import create_langfuse_handler
 from app.infrastructure.logging import get_logger
+from app.infrastructure.services.chunk_utils import normalize_chunk_content
 
 logger = get_logger(__name__)
 
@@ -55,7 +57,14 @@ class LangGraphAIService(IAIService):
         # グラフを構築
         self._graph = self._build_graph()
 
-        logger.info("langgraph_ai_service_initialized", model_name=model_name)
+        # LangFuseコールバックハンドラーを初期化
+        self._langfuse_handler = create_langfuse_handler()
+
+        logger.info(
+            "langgraph_ai_service_initialized",
+            model_name=model_name,
+            langfuse_enabled=settings.LANGFUSE_ENABLED,
+        )
 
     def _build_graph(self) -> StateGraph:
         """グラフを構築"""
@@ -168,6 +177,39 @@ class LangGraphAIService(IAIService):
         logger.debug("output_node_completed")
         return state
 
+    async def _stream_with_formatted_messages(
+        self, formatted_messages: Any, config: dict
+    ) -> AsyncGenerator[str, None]:
+        """
+        共通のストリーミング処理
+
+        Args:
+            formatted_messages: フォーマット済みメッセージ（ChatPromptValueまたはlist[BaseMessage]）
+            config: LangChain設定（コールバック等を含む）
+
+        Yields:
+            str: ストリーミングチャンクのコンテンツ
+        """
+        chunk_count = 0
+        async for chunk in self._llm.astream(
+            formatted_messages, config=config
+        ):
+            if hasattr(chunk, "content") and chunk.content:
+                chunk_count += 1
+                content = normalize_chunk_content(chunk.content)
+
+                # 空のコンテンツはスキップ
+                if not content:
+                    continue
+
+                logger.debug(
+                    "langgraph_chunk_yielding",
+                    chunk_length=len(content),
+                )
+                yield content
+
+        logger.info("langgraph_streaming_completed", chunk_count=chunk_count)
+
     async def generate_response(
         self, message: Message, context: str = ""
     ) -> str:
@@ -192,8 +234,13 @@ class LangGraphAIService(IAIService):
             # ユーザーメッセージを追加
             state["messages"].append(HumanMessage(content=message.content))
 
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
+
             # グラフを実行
-            result = await self._graph.ainvoke(state)
+            result = await self._graph.ainvoke(state, config=config)
 
             # 最後のAIメッセージを取得
             ai_messages = [
@@ -235,32 +282,46 @@ class LangGraphAIService(IAIService):
             # ユーザーメッセージを追加
             state["messages"].append(HumanMessage(content=message.content))
 
-            # グラフをストリーミング実行
-            full_response = ""
-            async for chunk in self._graph.astream(state):
-                # 各ノードの出力を処理
-                for node_name, node_output in chunk.items():
-                    if node_name == "normal_chat" or node_name == "rag_chat":
-                        messages = node_output.get("messages", [])
-                        for msg in messages:
-                            if isinstance(msg, AIMessage) and msg.content:
-                                # 新しい部分のみを取得
-                                new_content = msg.content[len(full_response) :]
-                                if new_content:
-                                    full_response = msg.content
-                                    yield new_content
+            # LangFuseコールバックを設定
+            config = {}
+            if self._langfuse_handler:
+                config["callbacks"] = [self._langfuse_handler]
 
-            # 最終的なレスポンスを確認
-            if not full_response:
-                # ストリーミングで取得できなかった場合は通常実行
-                result = await self._graph.ainvoke(state)
-                ai_messages = [
-                    msg
-                    for msg in result["messages"]
-                    if isinstance(msg, AIMessage)
-                ]
-                if ai_messages:
-                    yield ai_messages[-1].content
+            # 意図を判定（通常の会話フローを決定）
+            await self._intent_classifier(state)
+            next_action = state.get("next_action", "normal")
+
+            logger.debug(
+                "langgraph_streaming_started",
+                next_action=next_action,
+                message_length=len(message.content),
+                messages_count=len(state["messages"]),
+            )
+
+            # プロンプトテンプレートを使用してメッセージを構築
+            formatted_messages = await self._prompt.ainvoke(
+                {"messages": state["messages"]}
+            )
+
+            # 通常の会話の場合は、直接LLMをストリーミング実行
+            if next_action == "normal":
+                # 共通のストリーミング処理を使用
+                async for content in self._stream_with_formatted_messages(
+                    formatted_messages, config
+                ):
+                    yield content
+            else:
+                # RAGやツール実行の場合は、グラフをストリーミング実行
+                # ただし、現在は実装されていないため、通常の会話と同じ処理
+                # 将来的にRAG/ツール実装時は、ここで専用のストリーミング処理を実装
+                logger.debug(
+                    "langgraph_streaming_using_fallback",
+                    action=next_action,
+                )
+                async for content in self._stream_with_formatted_messages(
+                    formatted_messages, config
+                ):
+                    yield content
         except Exception as e:
             error_msg = str(e)
             logger.error(

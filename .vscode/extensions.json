@@ -9,6 +9,7 @@
     "davidanson.vscode-markdownlint",
     "docker.docker",
     "charliermarsh.ruff",
-    "njpwerner.autodocstring"
+    "njpwerner.autodocstring",
+    "ms-vscode.makefile-tools"
   ]
 }

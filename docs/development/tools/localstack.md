@@ -64,6 +64,15 @@
   - メッセージ配信の検証
 - **実装**: `SERVICES=...,sqs` に追加
 
+#### DynamoDB
+
+ユーザーセッション、設定の保存に使用
+
+```bash
+# DynamoDBテーブル一覧
+aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+```
+
 ### 低優先度（将来拡張時）
 
 #### AWS Lambda

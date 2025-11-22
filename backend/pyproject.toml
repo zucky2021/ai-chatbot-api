@@ -24,11 +24,12 @@ dependencies = [
     "structlog>=25.5.0",
     # LangChain
     "langchain>=1.0.5",
-    "langchain-core>=1.0.4",
+    "langchain-core>=1.0.7",
     "langchain-community>=0.4.1",
     "langchain-google-genai>=3.0.2",
     # LangGraph
     "langgraph>=1.0.3",
+    "langfuse>=3.10.1",
 ]
 
 [project.optional-dependencies]
