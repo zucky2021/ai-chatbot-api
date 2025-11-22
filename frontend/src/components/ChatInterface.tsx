@@ -19,8 +19,10 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isComposing, setIsComposing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const currentResponseRef = useRef<string>('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const { isConnected, currentResponse, sendMessage, error } = useWebSocket({
     sessionId,
     userId,
@@ -86,7 +88,7 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
   }, [messages])
 
   const handleSend = () => {
-    if (!inputMessage.trim() || !isConnected || isProcessing) {
+    if (!inputMessage.trim() || !isConnected || isProcessing || isComposing) {
       return
     }
 
@@ -103,10 +105,23 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // IME確定中は送信しない
+    if (isComposing) {
+      return
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
     }
+  }
+
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false)
   }
 
   return (
@@ -156,9 +171,13 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
       <div className="chat-input">
         <input
           type="text"
+          name="inputMessage"
+          ref={inputRef}
           value={inputMessage}
           onChange={e => setInputMessage(e.target.value)}
           onKeyDown={handleKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           placeholder={isConnected ? 'メッセージを入力...' : '接続中...'}
           disabled={!isConnected || isProcessing}
           maxLength={10000}
