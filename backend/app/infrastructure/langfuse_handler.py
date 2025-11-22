@@ -30,11 +30,11 @@ def create_langfuse_handler() -> CallbackHandler | None:
         handler = CallbackHandler(
             public_key=settings.LANGFUSE_PUBLIC_KEY,
             secret_key=settings.LANGFUSE_SECRET_KEY,
-            host=settings.LANGFUSE_HOST,
+            host=settings.LANGFUSE_BASE_URL,
         )
         logger.info(
             "langfuse_handler_created",
-            host=settings.LANGFUSE_HOST,
+            host=settings.LANGFUSE_BASE_URL,
         )
         return handler
     except Exception as e:

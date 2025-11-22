@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # LangFuse Settings
     LANGFUSE_PUBLIC_KEY: str | None = None
     LANGFUSE_SECRET_KEY: str | None = None
-    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    LANGFUSE_BASE_URL: str = "https://cloud.langfuse.com"
     LANGFUSE_ENABLED: bool = False
 
     # API Settings
