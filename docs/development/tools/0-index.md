@@ -7,3 +7,5 @@
 3. [DBeaver](./dbeaver.md)
 4. [CodeRabbit](./coderabbit.md)
 5. [LangFuse](./langfuse.md)
+6. [PostgreSQL](./postgresql.md)
+7. [Makeコマンド](./make-command.md)
