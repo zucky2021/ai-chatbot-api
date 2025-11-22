@@ -46,8 +46,20 @@ export function ChatInterface({ sessionId, userId, apiUrl }: ChatInterfaceProps)
         setMessages(prev => {
           const lastIndex = prev.length - 1
           const lastMessage = prev[lastIndex]
-          if (!lastMessage || lastMessage.type !== 'ai' || !isProcessing) {
-            return prev
+
+          // 最後のメッセージがAIメッセージでない場合、またはメッセージが空の場合は新規作成
+          if (!lastMessage || lastMessage.type !== 'ai') {
+            // processingメッセージが来る前にchunkが来た場合でも処理できるようにする
+            setIsProcessing(true)
+            return [
+              ...prev,
+              {
+                id: `ai-${Date.now()}`,
+                type: 'ai' as const,
+                content: currentResponseRef.current,
+                timestamp: new Date(),
+              },
+            ]
           }
           const updatedMessage = {
             ...lastMessage,

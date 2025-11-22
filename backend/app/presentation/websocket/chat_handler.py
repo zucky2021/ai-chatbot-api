@@ -303,15 +303,11 @@ async def _handle_message(
         # ストリーミングでAIレスポンスを生成
         full_response = ""
         async for chunk in ai_service.generate_stream(message, context):
-            full_response += chunk
-            # チャンクを送信
-            await connection_manager.send_personal_message(
-                {
-                    "type": "chunk",
-                    "content": chunk,
-                },
-                websocket,
-            )
+            if chunk:
+                full_response += chunk
+                await connection_manager.send_personal_message(
+                    {"type": "chunk", "content": chunk}, websocket
+                )
 
         # ストリーミング完了を通知
         await connection_manager.send_personal_message(

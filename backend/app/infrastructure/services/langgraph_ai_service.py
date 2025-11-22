@@ -253,32 +253,62 @@ class LangGraphAIService(IAIService):
             if self._langfuse_handler:
                 config["callbacks"] = [self._langfuse_handler]
 
-            # グラフをストリーミング実行
-            full_response = ""
-            async for chunk in self._graph.astream(state, config=config):
-                # 各ノードの出力を処理
-                for node_name, node_output in chunk.items():
-                    if node_name == "normal_chat" or node_name == "rag_chat":
-                        messages = node_output.get("messages", [])
-                        for msg in messages:
-                            if isinstance(msg, AIMessage) and msg.content:
-                                # 新しい部分のみを取得
-                                new_content = msg.content[len(full_response) :]
-                                if new_content:
-                                    full_response = msg.content
-                                    yield new_content
+            # 意図を判定（通常の会話フローを決定）
+            await self._intent_classifier(state)
+            next_action = state.get("next_action", "normal")
 
-            # 最終的なレスポンスを確認
-            if not full_response:
-                # ストリーミングで取得できなかった場合は通常実行
-                result = await self._graph.ainvoke(state, config=config)
-                ai_messages = [
-                    msg
-                    for msg in result["messages"]
-                    if isinstance(msg, AIMessage)
-                ]
-                if ai_messages:
-                    yield ai_messages[-1].content
+            logger.debug(
+                "langgraph_streaming_started",
+                next_action=next_action,
+                message_length=len(message.content),
+                messages_count=len(state["messages"]),
+            )
+
+            # 通常の会話の場合は、直接LLMをストリーミング実行
+            if next_action == "normal":
+                # プロンプトテンプレートを使用してメッセージを構築
+                formatted_messages = await self._prompt.ainvoke(
+                    {"messages": state["messages"]}
+                )
+
+                # LLMを直接ストリーミング実行
+                chunk_count = 0
+                async for chunk in self._llm.astream(
+                    formatted_messages, config=config
+                ):
+                    if hasattr(chunk, "content") and chunk.content:
+                        chunk_count += 1
+                        content = chunk.content
+                        logger.debug(
+                            "langgraph_chunk_yielding",
+                            chunk_length=len(content),
+                        )
+                        yield content
+
+                logger.info(
+                    "langgraph_streaming_completed",
+                    chunk_count=chunk_count,
+                )
+            else:
+                # RAGやツール実行の場合は、グラフをストリーミング実行
+                # ただし、現在は実装されていないため、通常の会話と同じ処理
+                formatted_messages = await self._prompt.ainvoke(
+                    {"messages": state["messages"]}
+                )
+
+                chunk_count = 0
+                async for chunk in self._llm.astream(
+                    formatted_messages, config=config
+                ):
+                    if hasattr(chunk, "content") and chunk.content:
+                        chunk_count += 1
+                        yield chunk.content
+
+                logger.info(
+                    "langgraph_streaming_completed",
+                    chunk_count=chunk_count,
+                    action=next_action,
+                )
         except Exception as e:
             error_msg = str(e)
             logger.error(
