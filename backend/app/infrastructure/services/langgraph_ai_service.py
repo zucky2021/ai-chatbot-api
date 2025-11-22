@@ -176,6 +176,34 @@ class LangGraphAIService(IAIService):
         logger.debug("output_node_completed")
         return state
 
+    async def _stream_with_formatted_messages(
+        self, formatted_messages: list[BaseMessage], config: dict
+    ) -> AsyncGenerator[str, None]:
+        """
+        共通のストリーミング処理
+
+        Args:
+            formatted_messages: フォーマット済みメッセージリスト
+            config: LangChain設定（コールバック等を含む）
+
+        Yields:
+            str: ストリーミングチャンクのコンテンツ
+        """
+        chunk_count = 0
+        async for chunk in self._llm.astream(
+            formatted_messages, config=config
+        ):
+            if hasattr(chunk, "content") and chunk.content:
+                chunk_count += 1
+                content = chunk.content
+                logger.debug(
+                    "langgraph_chunk_yielding",
+                    chunk_length=len(content),
+                )
+                yield content
+
+        logger.info("langgraph_streaming_completed", chunk_count=chunk_count)
+
     async def generate_response(
         self, message: Message, context: str = ""
     ) -> str:
@@ -264,51 +292,30 @@ class LangGraphAIService(IAIService):
                 messages_count=len(state["messages"]),
             )
 
+            # プロンプトテンプレートを使用してメッセージを構築
+            formatted_messages = await self._prompt.ainvoke(
+                {"messages": state["messages"]}
+            )
+
             # 通常の会話の場合は、直接LLMをストリーミング実行
             if next_action == "normal":
-                # プロンプトテンプレートを使用してメッセージを構築
-                formatted_messages = await self._prompt.ainvoke(
-                    {"messages": state["messages"]}
-                )
-
-                # LLMを直接ストリーミング実行
-                chunk_count = 0
-                async for chunk in self._llm.astream(
-                    formatted_messages, config=config
+                # 共通のストリーミング処理を使用
+                async for content in self._stream_with_formatted_messages(
+                    formatted_messages, config
                 ):
-                    if hasattr(chunk, "content") and chunk.content:
-                        chunk_count += 1
-                        content = chunk.content
-                        logger.debug(
-                            "langgraph_chunk_yielding",
-                            chunk_length=len(content),
-                        )
-                        yield content
-
-                logger.info(
-                    "langgraph_streaming_completed",
-                    chunk_count=chunk_count,
-                )
+                    yield content
             else:
                 # RAGやツール実行の場合は、グラフをストリーミング実行
                 # ただし、現在は実装されていないため、通常の会話と同じ処理
-                formatted_messages = await self._prompt.ainvoke(
-                    {"messages": state["messages"]}
-                )
-
-                chunk_count = 0
-                async for chunk in self._llm.astream(
-                    formatted_messages, config=config
-                ):
-                    if hasattr(chunk, "content") and chunk.content:
-                        chunk_count += 1
-                        yield chunk.content
-
-                logger.info(
-                    "langgraph_streaming_completed",
-                    chunk_count=chunk_count,
+                # 将来的にRAG/ツール実装時は、ここで専用のストリーミング処理を実装
+                logger.debug(
+                    "langgraph_streaming_using_fallback",
                     action=next_action,
                 )
+                async for content in self._stream_with_formatted_messages(
+                    formatted_messages, config
+                ):
+                    yield content
         except Exception as e:
             error_msg = str(e)
             logger.error(
