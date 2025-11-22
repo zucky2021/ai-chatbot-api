@@ -1,7 +1,7 @@
 """LangGraph AIサービス実装"""
 
 from collections.abc import AsyncGenerator
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -14,6 +14,7 @@ from app.domain.value_objects.message import Message
 from app.infrastructure.config import settings
 from app.infrastructure.langfuse_handler import create_langfuse_handler
 from app.infrastructure.logging import get_logger
+from app.infrastructure.services.chunk_utils import normalize_chunk_content
 
 logger = get_logger(__name__)
 
@@ -177,13 +178,13 @@ class LangGraphAIService(IAIService):
         return state
 
     async def _stream_with_formatted_messages(
-        self, formatted_messages: list[BaseMessage], config: dict
+        self, formatted_messages: Any, config: dict
     ) -> AsyncGenerator[str, None]:
         """
         共通のストリーミング処理
 
         Args:
-            formatted_messages: フォーマット済みメッセージリスト
+            formatted_messages: フォーマット済みメッセージ（ChatPromptValueまたはlist[BaseMessage]）
             config: LangChain設定（コールバック等を含む）
 
         Yields:
@@ -195,32 +196,7 @@ class LangGraphAIService(IAIService):
         ):
             if hasattr(chunk, "content") and chunk.content:
                 chunk_count += 1
-                content = chunk.content
-
-                # chunk.contentが辞書の場合、textキーからテキストを取得
-                if isinstance(content, dict):
-                    # Google Generative AIのレスポンス形式: {'type': 'text', 'text': '...', 'extras': {...}}
-                    content = content.get("text", "") or content.get(
-                        "content", ""
-                    )
-                    # それでも空の場合は、辞書全体を文字列化（フォールバック）
-                    if not content:
-                        # extrasなどの不要な情報を除外して、テキスト部分のみを抽出
-                        content = str(content.get("text", content))
-                # chunk.contentがリストの場合は結合して文字列に変換
-                elif isinstance(content, list):
-                    # リストの各要素が辞書の場合は、textキーを抽出
-                    text_parts = []
-                    for item in content:
-                        if isinstance(item, dict):
-                            text_parts.append(
-                                item.get("text", "") or item.get("content", "")
-                            )
-                        else:
-                            text_parts.append(str(item))
-                    content = "".join(text_parts)
-                elif not isinstance(content, str):
-                    content = str(content)
+                content = normalize_chunk_content(chunk.content)
 
                 # 空のコンテンツはスキップ
                 if not content:
