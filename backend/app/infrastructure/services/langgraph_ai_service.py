@@ -196,6 +196,36 @@ class LangGraphAIService(IAIService):
             if hasattr(chunk, "content") and chunk.content:
                 chunk_count += 1
                 content = chunk.content
+
+                # chunk.contentが辞書の場合、textキーからテキストを取得
+                if isinstance(content, dict):
+                    # Google Generative AIのレスポンス形式: {'type': 'text', 'text': '...', 'extras': {...}}
+                    content = content.get("text", "") or content.get(
+                        "content", ""
+                    )
+                    # それでも空の場合は、辞書全体を文字列化（フォールバック）
+                    if not content:
+                        # extrasなどの不要な情報を除外して、テキスト部分のみを抽出
+                        content = str(content.get("text", content))
+                # chunk.contentがリストの場合は結合して文字列に変換
+                elif isinstance(content, list):
+                    # リストの各要素が辞書の場合は、textキーを抽出
+                    text_parts = []
+                    for item in content:
+                        if isinstance(item, dict):
+                            text_parts.append(
+                                item.get("text", "") or item.get("content", "")
+                            )
+                        else:
+                            text_parts.append(str(item))
+                    content = "".join(text_parts)
+                elif not isinstance(content, str):
+                    content = str(content)
+
+                # 空のコンテンツはスキップ
+                if not content:
+                    continue
+
                 logger.debug(
                     "langgraph_chunk_yielding",
                     chunk_length=len(content),

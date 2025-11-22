@@ -127,6 +127,35 @@ class LangChainAIService(IAIService):
             ):
                 if hasattr(chunk, "content") and chunk.content:
                     content = chunk.content
+
+                    # chunk.contentが辞書の場合、textキーからテキストを取得
+                    if isinstance(content, dict):
+                        # Google Generative AIのレスポンス形式: {'type': 'text', 'text': '...', 'extras': {...}}
+                        content = content.get("text", "") or content.get(
+                            "content", ""
+                        )
+                        if not content:
+                            content = str(content.get("text", content))
+                    # chunk.contentがリストの場合は結合して文字列に変換
+                    elif isinstance(content, list):
+                        # リストの各要素が辞書の場合は、textキーを抽出
+                        text_parts = []
+                        for item in content:
+                            if isinstance(item, dict):
+                                text_parts.append(
+                                    item.get("text", "")
+                                    or item.get("content", "")
+                                )
+                            else:
+                                text_parts.append(str(item))
+                        content = "".join(text_parts)
+                    elif not isinstance(content, str):
+                        content = str(content)
+
+                    # 空のコンテンツはスキップ
+                    if not content:
+                        continue
+
                     full_response += content
                     yield content
 
