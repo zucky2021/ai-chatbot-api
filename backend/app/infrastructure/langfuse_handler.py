@@ -1,5 +1,6 @@
 """LangFuseコールバックハンドラーの設定"""
 
+from langfuse import get_client
 from langfuse.langchain import CallbackHandler
 
 from app.infrastructure.config import settings
@@ -27,11 +28,18 @@ def create_langfuse_handler() -> CallbackHandler | None:
         return None
 
     try:
-        handler = CallbackHandler(
-            public_key=settings.LANGFUSE_PUBLIC_KEY,
-            secret_key=settings.LANGFUSE_SECRET_KEY,
-            host=settings.LANGFUSE_BASE_URL,
-        )
+        langfuse = get_client()
+
+        # Verify connection
+        if langfuse.auth_check():
+            print("Langfuse client is authenticated and ready!")
+        else:
+            print(
+                "Authentication failed. Please check your credentials and host."
+            )
+
+        handler = CallbackHandler()
+
         logger.info(
             "langfuse_handler_created",
             host=settings.LANGFUSE_BASE_URL,
