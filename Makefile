@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-backend install-frontend \
+.PHONY: help all clean install install-dev install-backend install-frontend \
 		audit audit-desc outdated lock-upgrade lock-upgrade-dry-run \
 		lint lint-backend lint-frontend format format-backend format-frontend \
 		type-check test test-backend test-frontend \
@@ -22,6 +22,24 @@ help: ## このヘルプメッセージを表示
 	@echo "利用可能なコマンド:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' | sort
+
+##@ メイン
+
+all: install check build ## フルセットアップ（インストール、チェック、ビルド）
+
+clean: ## 一時ファイルとキャッシュをクリーンアップ
+	@echo "🧹 一時ファイルとキャッシュをクリーンアップ中..."
+	@find . -type d -name "__pycache__" -exec rm -r {} + 2>/dev/null || true
+	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	@find . -type d -name ".pytest_cache" -exec rm -r {} + 2>/dev/null || true
+	@find . -type d -name ".mypy_cache" -exec rm -r {} + 2>/dev/null || true
+	@find . -type d -name ".ruff_cache" -exec rm -r {} + 2>/dev/null || true
+	@find . -type d -name "*.egg-info" -exec rm -r {} + 2>/dev/null || true
+	@rm -rf $(FRONTEND_DIR)/dist 2>/dev/null || true
+	@rm -rf $(FRONTEND_DIR)/node_modules/.cache 2>/dev/null || true
+	@rm -rf $(FRONTEND_DIR)/.vite 2>/dev/null || true
+	@echo "✅ クリーンアップ完了"
 
 ##@ インストール
 
