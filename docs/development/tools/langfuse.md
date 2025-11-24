@@ -2,6 +2,7 @@
 
 LLMアプリケーションの観測性（Observability）と分析を提供するオープンソースプラットフォーム
 
+- [my-chatbot-project](https://us.cloud.langfuse.com/project/cmi97644n00slad074mc68lwn)
 - [公式サイト](https://langfuse.com/jp)
 - [GitHub](https://github.com/langfuse/langfuse)
 
