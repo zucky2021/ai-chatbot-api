@@ -8,12 +8,14 @@
 - `uv`（Python パッケージマネージャー）
 - AWS CLI
 - AWS SAM CLI
+- AWS CDK CLI
 
 ```sh
 python3 --version
 uv --version
 aws --version
 sam --version
+cdk --version
 ```
 
 ## 手順
