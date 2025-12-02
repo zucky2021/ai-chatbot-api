@@ -113,9 +113,10 @@ cdk watch
 ### 8. デプロイ（CDK）（ステップ5）
 
 ```bash
-cd lambda/cdk
+cd lambda
 
-# 初回デプロイ（ブートストラップが必要）
+# 初回デプロイ時のみブートストラップが必要（AWS環境への初回デプロイ時のみ）
+# ローカル開発（cdk synth, sam local invoke）では不要
 cdk bootstrap
 
 # スタックをデプロイ
@@ -125,7 +126,11 @@ cdk deploy
 cdk deploy LambdaStack
 ```
 
-> **注意**: `cdk deploy` を実行すると、Lambda関数のコードが自動的にビルド・パッケージ化されてデプロイされます。
+> **注意**:
+>
+> - `cdk deploy` を実行すると、Lambda関数のコードが自動的にビルド・パッケージ化されてデプロイされます。
+> - **`cdk bootstrap`は初回デプロイ時のみ必要**です。ローカル開発（`cdk synth`、`sam local invoke`）では不要です。
+> - `cdk bootstrap`は、CDKがアーティファクト（Lambda関数のコードなど）を保存するためのS3バケットとCloudFormationスタックを作成します。
 
 ---
 
