@@ -131,6 +131,7 @@ cdk deploy LambdaStack
 > - `cdk deploy` を実行すると、Lambda関数のコードが自動的にビルド・パッケージ化されてデプロイされます。
 > - **`cdk bootstrap`は初回デプロイ時のみ必要**です。ローカル開発（`cdk synth`、`sam local invoke`）では不要です。
 > - `cdk bootstrap`は、CDKがアーティファクト（Lambda関数のコードなど）を保存するためのS3バケットとCloudFormationスタックを作成します。
+>   **詳細**: AWS環境へのデプロイ手順は [deploy.md](./deploy.md) を参照してください。
 
 ---
 
