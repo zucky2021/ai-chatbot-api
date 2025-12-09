@@ -8,14 +8,12 @@ dependencies = [
     "boto3>=1.40.0",  # AWS SDK
     "psycopg2-binary>=2.9.0",  # PostgreSQL接続（archive_conversation, generate_stats）
     "asyncpg>=0.30.0",  # PostgreSQL非同期接続
+    "aws-cdk-lib>=2.230.0",
+    "constructs>=10.4.0",
+    "aws-cdk-aws-lambda-python-alpha>=2.204.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest==8.4.2",
-]
-infra = [
-    "aws-cdk-lib==2.215.0",
-    "constructs>=10.0.0,<11.0.0",
-    "aws-cdk-aws-lambda-python-alpha>=2.204.0",
 ]

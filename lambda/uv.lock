@@ -81,7 +81,7 @@ wheels = [
 
 [[package]]
 name = "aws-cdk-aws-lambda-python-alpha"
-version = "2.215.0a0"
+version = "2.230.0a0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aws-cdk-lib" },
@@ -90,9 +90,9 @@ dependencies = [
     { name = "publication" },
     { name = "typeguard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/b3/64d95c7e90c979f7f871209c7a6d72502819c6abee4cd9efab08cbbe408e/aws_cdk_aws_lambda_python_alpha-2.215.0a0.tar.gz", hash = "sha256:8c0f65b8652553287ffa16a5d2b3bdf47eb22779982f0ccd7e7d268d045f0cda", size = 89232, upload-time = "2025-09-15T16:10:23.246Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/12/5ba721f33484147507b1d00e9c81137189fc1090556375c2eb131f3175d2/aws_cdk_aws_lambda_python_alpha-2.230.0a0.tar.gz", hash = "sha256:ede6bd2baa1613d4c053c30b29c5e229f6b48ad01cf9b29da99b6a5933b5ab72", size = 97121, upload-time = "2025-11-26T20:01:10.924Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/d9/a5659d421433e56bdecaa897f6c4440419992f2c5c8f3bf6eda36ee12cc2/aws_cdk_aws_lambda_python_alpha-2.215.0a0-py3-none-any.whl", hash = "sha256:ddeb8def835b0fe7071fb53d0680f3d1761a75e18eff3ff1168f4c832c25dd55", size = 88145, upload-time = "2025-09-15T16:09:40.915Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/70/a5d1182e03102800495f3630515a02f4525aa710798e67e8d6238de5e0dc/aws_cdk_aws_lambda_python_alpha-2.230.0a0-py3-none-any.whl", hash = "sha256:e8b8c4e705aed6f5cbb556723f63e1c76ace93d0a7522d3a684cfff4335cd4a3", size = 95711, upload-time = "2025-11-26T20:00:24.547Z" },
 ]
 
 [[package]]
@@ -111,7 +111,7 @@ wheels = [
 
 [[package]]
 name = "aws-cdk-lib"
-version = "2.215.0"
+version = "2.230.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aws-cdk-asset-awscli-v1" },
@@ -122,9 +122,9 @@ dependencies = [
     { name = "publication" },
     { name = "typeguard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b2/4b/93b7f6d155c0d926989f6641e26d887afe481ec1414be219c31411cecace/aws_cdk_lib-2.215.0.tar.gz", hash = "sha256:82da916b55070f7fc8a11a28f47afb6f7e34b452be7d7a4d7fdbf8e4e77ea768", size = 44003915, upload-time = "2025-09-15T16:10:35.598Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/32/1ad3c9b8df1b46335bdc28db6dcd86ad93a7976116425f943e26397bca22/aws_cdk_lib-2.230.0.tar.gz", hash = "sha256:288881f38f89ac4a8943420d79f4a8054ee1667b4eaa201dce5aef2a5a385434", size = 45965265, upload-time = "2025-11-26T20:01:23.957Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/17/a9249cd01895cb9da1512bb6cc807850e794ecf1f3ef9a9b1f5711493b51/aws_cdk_lib-2.215.0-py3-none-any.whl", hash = "sha256:f609a88a6fe252dc5a0629393567942ec7f0c2aef1ef350c911cd9165b50bee5", size = 44258884, upload-time = "2025-09-15T16:10:00.807Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/9e/a6d85ea13e77f91d2ce457e6cdaf6ca4d6ba4646cd3edc05d5e08bbf4f15/aws_cdk_lib-2.230.0-py3-none-any.whl", hash = "sha256:ebca6bcfb92d3cabfddbb587746e8a8a8ef3afc8ad68287ad15b93168cfffeef", size = 46608899, upload-time = "2025-11-26T20:00:44.023Z" },
 ]
 
 [[package]]
@@ -242,7 +242,10 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "asyncpg" },
+    { name = "aws-cdk-aws-lambda-python-alpha" },
+    { name = "aws-cdk-lib" },
     { name = "boto3" },
+    { name = "constructs" },
     { name = "psycopg2-binary" },
 ]
 
@@ -250,23 +253,18 @@ dependencies = [
 dev = [
     { name = "pytest" },
 ]
-infra = [
-    { name = "aws-cdk-aws-lambda-python-alpha" },
-    { name = "aws-cdk-lib" },
-    { name = "constructs" },
-]
 
 [package.metadata]
 requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
-    { name = "aws-cdk-aws-lambda-python-alpha", marker = "extra == 'infra'", specifier = ">=2.204.0" },
-    { name = "aws-cdk-lib", marker = "extra == 'infra'", specifier = "==2.215.0" },
+    { name = "aws-cdk-aws-lambda-python-alpha", specifier = ">=2.204.0" },
+    { name = "aws-cdk-lib", specifier = ">=2.230.0" },
     { name = "boto3", specifier = ">=1.40.0" },
-    { name = "constructs", marker = "extra == 'infra'", specifier = ">=10.0.0,<11.0.0" },
+    { name = "constructs", specifier = ">=10.4.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "==8.4.2" },
 ]
-provides-extras = ["dev", "infra"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "packaging"
