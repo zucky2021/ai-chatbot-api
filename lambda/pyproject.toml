@@ -1,0 +1,24 @@
+[project]
+name = "lambda"
+version = "0.1.0"
+description = "Lambda functions and CDK infrastructure definitions"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Lambda関数の実行時依存関係
+    "boto3>=1.40.0",  # AWS SDK
+    "psycopg2-binary>=2.9.0",  # PostgreSQL接続（archive_conversation, generate_stats）
+    "asyncpg>=0.30.0",  # PostgreSQL非同期接続
+    # 注意: CDK依存関係は [project.optional-dependencies] の infra グループに定義
+    # PythonFunction は dependencies のみを使用するため、CDK依存関係はLambdaパッケージに含まれない
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.4.2",
+]
+infra = [
+    "aws-cdk-lib>=2.230.0",
+    "constructs>=10.4.0",
+    "aws-cdk-aws-lambda-python-alpha>=2.204.0",
+]

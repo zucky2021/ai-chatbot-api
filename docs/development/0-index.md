@@ -9,5 +9,6 @@
 5. [コーディング規約](./coding-rules/0-index.md)
 6. [CI](./ci/0-index.md)
 7. [WebSocketチャット機能](./websocket.md)
-8. [AIサービス比較](./ai-services-comparison.md.md)
+8. [AIサービス比較](./ai-services-comparison.md)
 9. [構造化ログとエラーハンドリング](./logging-and-error-handling.md)
+10. [Lambda](./lambda/0-index.md)
