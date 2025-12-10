@@ -41,14 +41,12 @@ uv sync
 
 > **重要**: LambdaプロジェクトとCDKプロジェクトの関連
 >
-> - **Lambdaプロジェクト**（`lambda/` 直下）:
+> - **Lambdaプロジェクト**（`lambda/functions/`）:
 >   - Lambda関数の実装コード（`archive_conversation/`, `cleanup_sessions/`, `generate_stats/`）
->   - 共有コード（`shared/`）
->   - Lambda関数用の依存関係（`lambda/pyproject.toml`）
+>   - 共有コード（`functions/shared/`、オプション）
 >   - **役割**: 実際に実行されるLambda関数のコード
-> - **CDKプロジェクト**（`lambda/cdk/`）:
->   - インフラ定義コード（`lambda_stack.py`, `app.py` など）
->   - CDK用の依存関係（`aws-cdk-lib`, `constructs` など）
+> - **CDKプロジェクト**（`lambda/` ルート）:
+>   - インフラ定義コード（`infra/lambda_stack.py`, `app.py` など）
 >   - **役割**: Lambda関数をAWSにデプロイするための定義（EventBridgeルール、IAMロールなど）
 > - **関係性**:
 >   - CDKプロジェクトは、Lambdaプロジェクトのコードを参照してデプロイ定義を作成します

@@ -22,9 +22,22 @@ cdk --version
 
 ### 1. パッケージインストール
 
+依存関係は`lambda/pyproject.toml`で統一管理されています：
+
+- **Lambda関数の実行時依存関係**: `dependencies`に定義
+- **CDK依存関係**: `[project.optional-dependencies]`の`infra`グループに定義
+
 ```sh
 cd lambda
-uv sync --all-extras
+
+# Lambda関数の実行時依存関係をインストール
+uv sync
+
+# CDK依存関係も含めてインストール（開発・デプロイ時）
+uv sync --extra infra
+
+# 開発ツールも含めてインストール
+uv sync --extra infra --extra dev
 ```
 
 ## 2. AWS CLI のセットアップ

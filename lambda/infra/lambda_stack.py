@@ -35,6 +35,8 @@ class LambdaStack(Stack):
 
         # 1. 古い会話データのアーカイブLambda関数
         # PythonFunction を使用すると、uv.lock を自動検出してビルドしてくれる
+        # entry="." を指定することで、lambda/ ルートの pyproject.toml を使用
+        # dependencies のみがLambdaパッケージに含まれ、[project.optional-dependencies] の infra グループは含まれない
         archive_function = PythonFunction(
             self,
             "ArchiveConversationFunction",

@@ -9,8 +9,8 @@ from infra.lambda_stack import LambdaStack
 app = cdk.App()
 
 env = cdk.Environment(
-    account=os.getenv("CDK_DEFAULT_ACCOUNT"),
-    region=os.getenv("CDK_DEFAULT_REGION", "ap-northeast-1"),
+    account=os.environ.get("CDK_DEFAULT_ACCOUNT"),
+    region=os.environ.get("CDK_DEFAULT_REGION", "ap-northeast-1"),
 )
 
 LambdaStack(
