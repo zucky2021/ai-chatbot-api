@@ -26,6 +26,9 @@ async def get_conversation_repository(
             db = session
             break
 
+    if db is None:
+        raise RuntimeError("データベースセッションを取得できませんでした")
+
     return PostgresConversationRepository(db)
 
 

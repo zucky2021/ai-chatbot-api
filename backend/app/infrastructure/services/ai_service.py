@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 class GoogleAIService(IAIService):
     """Google AI Studioサービス実装（LangChain使用）"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # モデル名は設定から取得（デフォルト: gemini-flash-latest）
         model_name = settings.GOOGLE_AI_MODEL
         logger.info("google_ai_model_initializing", model_name=model_name)
@@ -40,7 +40,10 @@ class GoogleAIService(IAIService):
             prompt = self._build_prompt(message, context)
             messages = [HumanMessage(content=prompt)]
             response = await self._llm.ainvoke(messages)
-            return response.content
+            content = response.content
+            if isinstance(content, str):
+                return content
+            return str(content)
         except Exception as e:
             raise RuntimeError(f"AIレスポンス生成エラー: {str(e)}")
 
@@ -66,7 +69,7 @@ class GoogleAIService(IAIService):
             logger.error(
                 "ai_stream_generation_error",
                 error=error_msg,
-                message_role=message.role,
+                message_sender=message.sender,
                 exc_info=True,
             )
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")

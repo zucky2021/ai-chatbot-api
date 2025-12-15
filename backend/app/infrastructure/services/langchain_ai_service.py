@@ -1,10 +1,12 @@
 """LangChain AIサービス実装"""
 
 from collections.abc import AsyncGenerator
+from typing import Any, cast
 
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.domain.services import IAIService
@@ -20,7 +22,7 @@ logger = get_logger(__name__)
 class LangChainAIService(IAIService):
     """LangChainを使用したAIサービス実装"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """LangChain AIサービスを初期化"""
         model_name = settings.GOOGLE_AI_MODEL
         logger.info("langchain_ai_model_initializing", model_name=model_name)
@@ -72,32 +74,37 @@ class LangChainAIService(IAIService):
             messages = history.messages if hasattr(history, "messages") else []
 
             # LangFuseコールバックを設定
-            config = {}
+            config: dict[str, Any] = {}
             if self._langfuse_handler:
                 config["callbacks"] = [self._langfuse_handler]
 
             # チェーンを実行
+            runnable_config: RunnableConfig = cast(RunnableConfig, config)
             response = await chain.ainvoke(
-                {"input": message.content, "history": messages}, config=config
+                {"input": message.content, "history": messages}, config=runnable_config
             )
 
             # メモリに会話を保存
             history.add_user_message(message.content)
-            if hasattr(response, "content"):
-                history.add_ai_message(response.content)
-            else:
-                history.add_ai_message(str(response))
-
-            return (
+            response_content = (
                 response.content
                 if hasattr(response, "content")
                 else str(response)
             )
+            # response.contentがリストの場合は文字列に変換
+            if isinstance(response_content, list):
+                response_content = "".join(
+                    str(item) if not isinstance(item, str) else item
+                    for item in response_content
+                )
+            history.add_ai_message(str(response_content))
+
+            return str(response_content)
         except Exception as e:
             logger.error(
                 "langchain_ai_response_generation_error",
                 error=str(e),
-                message_role=message.role,
+                message_sender=message.sender,
                 exc_info=True,
             )
             raise RuntimeError(f"AIレスポンス生成エラー: {str(e)}")
@@ -117,14 +124,15 @@ class LangChainAIService(IAIService):
             messages = history.messages if hasattr(history, "messages") else []
 
             # LangFuseコールバックを設定
-            config = {}
+            config: dict[str, Any] = {}
             if self._langfuse_handler:
                 config["callbacks"] = [self._langfuse_handler]
 
             # ストリーミングでレスポンスを取得
             full_response = ""
+            runnable_config: RunnableConfig = cast(RunnableConfig, config)
             async for chunk in chain.astream(
-                {"input": message.content, "history": messages}, config=config
+                {"input": message.content, "history": messages}, config=runnable_config
             ):
                 if hasattr(chunk, "content") and chunk.content:
                     content = normalize_chunk_content(chunk.content)
@@ -145,7 +153,7 @@ class LangChainAIService(IAIService):
             logger.error(
                 "langchain_ai_stream_generation_error",
                 error=error_msg,
-                message_role=message.role,
+                message_sender=message.sender,
                 exc_info=True,
             )
             raise RuntimeError(f"AIストリーム生成エラー: {error_msg}")

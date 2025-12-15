@@ -17,7 +17,7 @@ class Message:
     sender: str
     metadata: dict | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """値オブジェクトの検証"""
         if not self.content or not self.content.strip():
             raise ValueError("メッセージ内容は空にできません")

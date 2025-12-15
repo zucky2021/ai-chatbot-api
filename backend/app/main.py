@@ -2,6 +2,7 @@
 FastAPIアプリケーションのエントリーポイント
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
@@ -30,7 +31,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 起動時の処理
     logger.info("startup", message="AI Chatbot API is starting up")
     try:
@@ -74,10 +75,10 @@ app.add_middleware(
 )
 
 # 例外ハンドラーの登録
-app.add_exception_handler(AppError, app_exception_handler)
-app.add_exception_handler(HTTPException, http_exception_handler)
-app.add_exception_handler(RequestValidationError, validation_exception_handler)
-app.add_exception_handler(ValidationError, validation_exception_handler)
+app.add_exception_handler(AppError, app_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(HTTPException, http_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(ValidationError, validation_exception_handler)  # type: ignore[arg-type]
 app.add_exception_handler(Exception, generic_exception_handler)
 
 # ルーターの登録
@@ -86,7 +87,7 @@ app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {
         "message": "AI Chatbot API",
         "version": settings.API_VERSION,

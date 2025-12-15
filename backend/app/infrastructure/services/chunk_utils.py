@@ -1,7 +1,9 @@
 """チャンクコンテンツ正規化ユーティリティ"""
 
+from typing import Any
 
-def normalize_chunk_content(content) -> str:
+
+def normalize_chunk_content(content: Any) -> str:
     """
     LLMチャンクのコンテンツを文字列に正規化
 
@@ -23,7 +25,7 @@ def normalize_chunk_content(content) -> str:
         # それでも空の場合は、辞書全体を文字列化（フォールバック）
         if not normalized:
             normalized = str(content.get("text", content))
-        return normalized
+        return str(normalized)
 
     # リストの場合は結合して文字列に変換
     if isinstance(content, list):

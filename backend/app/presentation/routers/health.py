@@ -9,14 +9,14 @@ logger = get_logger(__name__)
 
 
 @router.get("")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """ヘルスチェックエンドポイント"""
     logger.debug("health_check")
     return {"status": "healthy", "service": "AI Chatbot API"}
 
 
 @router.get("/ready")
-async def readiness_check():
+async def readiness_check() -> dict[str, str]:
     """レディネスチェック（本番環境での確認用）"""
     logger.debug("readiness_check")
     return {"status": "ready"}

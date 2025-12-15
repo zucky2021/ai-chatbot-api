@@ -1,13 +1,15 @@
 """LangGraph AIサービス実装"""
 
 from collections.abc import AsyncGenerator
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict, cast
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
+from langgraph.graph.state import CompiledStateGraph
 
 from app.domain.services import IAIService
 from app.domain.value_objects.message import Message
@@ -33,7 +35,7 @@ class GraphState(TypedDict):
 class LangGraphAIService(IAIService):
     """LangGraphを使用したAIサービス実装"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """LangGraph AIサービスを初期化"""
         model_name = settings.GOOGLE_AI_MODEL
         logger.info("langgraph_ai_model_initializing", model_name=model_name)
@@ -66,7 +68,7 @@ class LangGraphAIService(IAIService):
             langfuse_enabled=settings.LANGFUSE_ENABLED,
         )
 
-    def _build_graph(self) -> StateGraph:
+    def _build_graph(self) -> CompiledStateGraph:  # noqa
         """グラフを構築"""
         graph = StateGraph(GraphState)
 
@@ -111,7 +113,8 @@ class LangGraphAIService(IAIService):
 
         last_message = messages[-1]
         if isinstance(last_message, HumanMessage):
-            content = last_message.content.lower()
+            raw_content = last_message.content
+            content = str(raw_content).lower() if not isinstance(raw_content, str) else raw_content.lower()
 
             # 簡単な意図判定（将来はより高度な判定を実装）
             # TODO: nodeを分ける,システムプロンプトで分岐する
@@ -134,7 +137,8 @@ class LangGraphAIService(IAIService):
 
     def _route_after_intent(self, state: GraphState) -> str:
         """意図判定後のルーティング"""
-        return state.get("next_action", "normal")
+        next_action = state.get("next_action")
+        return next_action if next_action is not None else "normal"
 
     async def _normal_chat(self, state: GraphState) -> GraphState:
         """通常会話ノード: 標準的な会話処理"""
@@ -178,7 +182,7 @@ class LangGraphAIService(IAIService):
         return state
 
     async def _stream_with_formatted_messages(
-        self, formatted_messages: Any, config: dict
+        self, formatted_messages: Any, config: dict[str, Any]
     ) -> AsyncGenerator[str, None]:
         """
         共通のストリーミング処理
@@ -191,8 +195,9 @@ class LangGraphAIService(IAIService):
             str: ストリーミングチャンクのコンテンツ
         """
         chunk_count = 0
+        runnable_config: RunnableConfig = cast(RunnableConfig, config)
         async for chunk in self._llm.astream(
-            formatted_messages, config=config
+            formatted_messages, config=runnable_config
         ):
             if hasattr(chunk, "content") and chunk.content:
                 chunk_count += 1
@@ -235,19 +240,23 @@ class LangGraphAIService(IAIService):
             state["messages"].append(HumanMessage(content=message.content))
 
             # LangFuseコールバックを設定
-            config = {}
+            config: dict[str, Any] = {}
             if self._langfuse_handler:
                 config["callbacks"] = [self._langfuse_handler]
 
             # グラフを実行
-            result = await self._graph.ainvoke(state, config=config)
+            runnable_config: RunnableConfig = cast(RunnableConfig, config)
+            result = await self._graph.ainvoke(state, config=runnable_config)
 
             # 最後のAIメッセージを取得
             ai_messages = [
                 msg for msg in result["messages"] if isinstance(msg, AIMessage)
             ]
             if ai_messages:
-                return ai_messages[-1].content
+                content = ai_messages[-1].content
+                if isinstance(content, str):
+                    return content
+                return str(content)
 
             return "レスポンスを生成できませんでした。"
         except Exception as e:

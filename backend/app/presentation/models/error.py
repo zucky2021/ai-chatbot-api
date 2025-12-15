@@ -48,9 +48,9 @@ class ErrorDetail(BaseModel):
     code: ErrorCode = Field(..., description="エラーコード")
     message: str = Field(..., description="エラーメッセージ")
     details: dict[str, Any] | None = Field(
-        None, description="エラーの詳細情報（任意）"
+        default=None, description="エラーの詳細情報（任意）"
     )
-    request_id: str | None = Field(None, description="リクエストID")
+    request_id: str | None = Field(default=None, description="リクエストID")
 
 
 class ErrorResponse(BaseModel):

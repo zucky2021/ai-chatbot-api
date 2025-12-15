@@ -42,7 +42,7 @@ redis_client = redis.from_url(
 )
 
 
-async def init_db():
+async def init_db() -> None:
     """データベース初期化（リトライ付き）"""
     max_retries = 5
     retry_delay = 2
@@ -80,6 +80,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def get_redis():
+async def get_redis() -> redis.Redis:  # noqa: PYI055
     """Redisクライアント取得"""
     return redis_client

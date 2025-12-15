@@ -4,7 +4,7 @@
 各リクエストに一意のIDを付与し、ログとレスポンスヘッダーに含める
 """
 
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 import uuid
 
 from fastapi import Request, Response
@@ -16,7 +16,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
     """リクエストIDを付与するミドルウェア"""
 
     async def dispatch(
-        self, request: Request, call_next: Callable
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         """
         リクエストにIDを付与し、レスポンスヘッダーとログコンテキストに追加

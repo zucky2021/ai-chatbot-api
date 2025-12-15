@@ -21,7 +21,7 @@ router = APIRouter()
 async def send_message(
     request: SendMessageRequest,
     db: AsyncSession = Depends(get_db),
-):
+) -> SendMessageResponse:
     """
     メッセージを送信してAIレスポンスを取得
 
@@ -33,7 +33,7 @@ async def send_message(
 
 
 @router.post("/sessions", response_model=CreateSessionResponse)
-async def create_session(request: CreateSessionRequest):
+async def create_session(request: CreateSessionRequest) -> CreateSessionResponse:
     """
     新しいチャットセッションを作成
 
@@ -47,7 +47,9 @@ async def create_session(request: CreateSessionRequest):
     "/sessions/{session_id}/history",
     response_model=ConversationHistoryResponse,
 )
-async def get_history(session_id: str, db: AsyncSession = Depends(get_db)):
+async def get_history(
+    session_id: str, db: AsyncSession = Depends(get_db)
+) -> ConversationHistoryResponse:
     """
     セッションの会話履歴を取得
 
@@ -63,7 +65,7 @@ async def websocket_chat(
     user_id: str = Query(
         default="default_user", description="ユーザーID（現在はデフォルト）"
     ),
-):
+) -> None:
     """
     WebSocketチャットエンドポイント
 
