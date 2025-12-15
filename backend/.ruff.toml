@@ -7,6 +7,8 @@ target-version = "py312"
 # 行の長さ制限（PEP 8準拠）
 line-length = 79
 
+# リンター設定
+[lint]
 # 有効にするルール
 select = [
     "E",   # pycodestyle errors

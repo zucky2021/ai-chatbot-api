@@ -81,7 +81,8 @@ class LangChainAIService(IAIService):
             # チェーンを実行
             runnable_config: RunnableConfig = cast(RunnableConfig, config)
             response = await chain.ainvoke(
-                {"input": message.content, "history": messages}, config=runnable_config
+                {"input": message.content, "history": messages},
+                config=runnable_config,
             )
 
             # メモリに会話を保存
@@ -132,7 +133,8 @@ class LangChainAIService(IAIService):
             full_response = ""
             runnable_config: RunnableConfig = cast(RunnableConfig, config)
             async for chunk in chain.astream(
-                {"input": message.content, "history": messages}, config=runnable_config
+                {"input": message.content, "history": messages},
+                config=runnable_config,
             ):
                 if hasattr(chunk, "content") and chunk.content:
                     content = normalize_chunk_content(chunk.content)

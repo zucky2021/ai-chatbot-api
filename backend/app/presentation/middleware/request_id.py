@@ -16,7 +16,9 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
     """リクエストIDを付与するミドルウェア"""
 
     async def dispatch(
-        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         """
         リクエストにIDを付与し、レスポンスヘッダーとログコンテキストに追加

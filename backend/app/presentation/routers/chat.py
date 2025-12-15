@@ -33,7 +33,9 @@ async def send_message(
 
 
 @router.post("/sessions", response_model=CreateSessionResponse)
-async def create_session(request: CreateSessionRequest) -> CreateSessionResponse:
+async def create_session(
+    request: CreateSessionRequest,
+) -> CreateSessionResponse:
     """
     新しいチャットセッションを作成
 

@@ -18,8 +18,12 @@ class Conversation(Base):
     __tablename__ = "conversations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
-    session_id: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
+    user_id: Mapped[str] = mapped_column(
+        String(255), index=True, nullable=False
+    )
+    session_id: Mapped[str] = mapped_column(
+        String(255), index=True, nullable=False
+    )
     message: Mapped[str] = mapped_column(Text, nullable=False)
     response: Mapped[str | None] = mapped_column(Text, nullable=True)
     metadata_json: Mapped[dict[str, Any] | None] = mapped_column(

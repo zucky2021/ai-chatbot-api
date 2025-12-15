@@ -114,7 +114,11 @@ class LangGraphAIService(IAIService):
         last_message = messages[-1]
         if isinstance(last_message, HumanMessage):
             raw_content = last_message.content
-            content = str(raw_content).lower() if not isinstance(raw_content, str) else raw_content.lower()
+            content = (
+                str(raw_content).lower()
+                if not isinstance(raw_content, str)
+                else raw_content.lower()
+            )
 
             # 簡単な意図判定（将来はより高度な判定を実装）
             # TODO: nodeを分ける,システムプロンプトで分岐する
