@@ -4,6 +4,7 @@
 Amazon Athenaでの検索に対応したJSON形式のログを出力
 """
 
+from collections.abc import MutableMapping
 import logging
 import sys
 from typing import Any
@@ -37,9 +38,9 @@ def mask_sensitive_fields(
         "aws_secret_access_key",
     }
 
-    def mask_dict(d: dict[str, Any]) -> dict[str, Any]:
+    def mask_dict(d: MutableMapping[str, Any]) -> dict[str, Any]:
         """辞書内の機密情報をマスキング"""
-        masked = {}
+        masked: dict[str, Any] = {}
         for key, value in d.items():
             if any(sensitive in key.lower() for sensitive in sensitive_keys):
                 masked[key] = "***MASKED***"
@@ -141,4 +142,5 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     Returns:
         構造化ロガー
     """
-    return structlog.get_logger(name)
+    logger: structlog.stdlib.BoundLogger = structlog.get_logger(name)
+    return logger

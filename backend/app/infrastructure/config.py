@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = ""
 
     # Redis
     REDIS_URL: str = "redis://redis:6379"
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = "test"
 
     # Google AI
-    GOOGLE_AI_API_KEY: str
+    GOOGLE_AI_API_KEY: str = ""
     GOOGLE_AI_MODEL: str = "gemini-flash-latest"  # デフォルトはgemini-flash-latest（常に最新のFlashモデルを使用）
 
     # LangChain Settings

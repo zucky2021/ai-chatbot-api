@@ -12,7 +12,7 @@ import structlog
 class StructlogHandler(logging.Handler):
     """標準loggingをstructlogに転送するハンドラー"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.logger = structlog.get_logger("langchain")
 

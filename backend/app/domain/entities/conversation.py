@@ -22,7 +22,7 @@ class Conversation:
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """エンティティ作成後の初期化"""
         if not self.user_id:
             raise ValueError("user_idは必須です")

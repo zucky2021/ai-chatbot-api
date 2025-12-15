@@ -43,3 +43,6 @@ jobs:
 
       - name: Run ruff formatter (check only)
         run: uv run ruff format --check .
+
+      - name: Run mypy type checker
+        run: uv run mypy app

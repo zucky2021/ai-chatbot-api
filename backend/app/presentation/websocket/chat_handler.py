@@ -236,10 +236,10 @@ async def _handle_message(
     data: dict[str, Any],
     session_id: str,
     user_id: str,
-    conversation_repo,
-    session_repo,
-    ai_service,
-    cache_service,
+    conversation_repo: Any,
+    session_repo: Any,
+    ai_service: Any,
+    cache_service: Any,
 ) -> None:
     """
     メッセージを処理してストリーミングレスポンスを送信

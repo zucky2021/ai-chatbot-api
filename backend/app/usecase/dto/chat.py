@@ -29,11 +29,11 @@ class SendMessageRequest(BaseModel):
 class SendMessageResponse(BaseModel):
     """メッセージ送信レスポンスDTO"""
 
-    conversation_id: int
+    conversation_id: int | None
     message: str
     response: str
     session_id: str
-    created_at: datetime
+    created_at: datetime | None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -71,7 +71,7 @@ class CreateSessionResponse(BaseModel):
 
     session_id: str
     status: str
-    created_at: datetime
+    created_at: datetime | None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -87,10 +87,14 @@ class CreateSessionResponse(BaseModel):
 class ConversationItem(BaseModel):
     """会話履歴DTO"""
 
-    id: int
+    id: int | None
+    user_id: str
+    session_id: str
     message: str
-    response: str
-    created_at: datetime
+    response: str | None
+    metadata: dict[str, Any] | None
+    created_at: str | None
+    updated_at: str | None
 
     model_config = ConfigDict(
         json_schema_extra={

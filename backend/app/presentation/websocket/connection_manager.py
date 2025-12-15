@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ConnectionManager:
     """WebSocket接続管理クラス"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # セッションIDごとの接続を管理
         self._active_connections: dict[str, set[WebSocket]] = {}
         # 接続のロック（並行処理対策）

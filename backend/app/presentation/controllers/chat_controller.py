@@ -233,22 +233,24 @@ class ChatController:
                 count=len(conversations),
             )
 
+            from app.usecase.dto.chat import ConversationItem
+
             return ConversationHistoryResponse(
                 conversations=[
-                    {
-                        "id": conv.id,
-                        "user_id": conv.user_id,
-                        "session_id": conv.session_id,
-                        "message": conv.message,
-                        "response": conv.response,
-                        "metadata": conv.metadata,
-                        "created_at": conv.created_at.isoformat()
+                    ConversationItem(
+                        id=conv.id,
+                        user_id=conv.user_id,
+                        session_id=conv.session_id,
+                        message=conv.message,
+                        response=conv.response,
+                        metadata=conv.metadata,
+                        created_at=conv.created_at.isoformat()
                         if conv.created_at
                         else None,
-                        "updated_at": conv.updated_at.isoformat()
+                        updated_at=conv.updated_at.isoformat()
                         if conv.updated_at
                         else None,
-                    }
+                    )
                     for conv in conversations
                 ]
             )

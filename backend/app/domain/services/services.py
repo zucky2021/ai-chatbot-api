@@ -17,7 +17,7 @@ class IAIService(ABC):
         pass
 
     @abstractmethod
-    async def generate_stream(
+    def generate_stream(
         self, message: Message, context: str = ""
     ) -> AsyncGenerator[str, None]:
         """AIレスポンスをストリームで生成"""

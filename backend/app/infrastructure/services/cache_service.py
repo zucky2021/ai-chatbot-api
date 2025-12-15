@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 class RedisCacheService(ICacheService):
     """Redisキャッシュサービス実装"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._redis: redis.Redis | None = None
 
     async def _get_redis(self) -> redis.Redis:

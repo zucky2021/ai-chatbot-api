@@ -30,7 +30,7 @@ class Session:
     updated_at: datetime | None = None
     expires_at: int | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """エンティティ作成後の初期化"""
         if not self.session_id:
             raise ValueError("session_idは必須です")

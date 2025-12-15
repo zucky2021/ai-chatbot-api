@@ -1,6 +1,7 @@
 """DynamoDBセッションリポジトリ実装"""
 
 from datetime import datetime
+from typing import Any
 
 import boto3
 from botocore.exceptions import ClientError
@@ -13,7 +14,7 @@ from app.infrastructure.config import settings
 class DynamoDBSessionRepository(ISessionRepository):
     """DynamoDBセッションリポジトリ実装"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # DynamoDBは非同期APIがないため、同期で実装
         self._dynamodb = boto3.resource(
             "dynamodb",
@@ -37,7 +38,7 @@ class DynamoDBSessionRepository(ISessionRepository):
             else:
                 raise
 
-    def _create_table(self):
+    def _create_table(self) -> None:
         """テーブルを作成"""
         try:
             self._dynamodb.create_table(
@@ -61,7 +62,7 @@ class DynamoDBSessionRepository(ISessionRepository):
 
     def _create_sync(self, session: Session) -> Session:
         """セッションを作成（同期実装）"""
-        item = {
+        item: dict[str, Any] = {
             "session_id": session.session_id,
             "user_id": session.user_id,
             "status": session.status.value,
@@ -116,7 +117,9 @@ class DynamoDBSessionRepository(ISessionRepository):
                 updated_at=datetime.fromisoformat(
                     item.get("updated_at", datetime.now().isoformat())
                 ),
-                expires_at=item.get("expires_at"),
+                expires_at=int(item["expires_at"])
+                if item.get("expires_at")
+                else None,
             )
         except ClientError as e:
             raise RuntimeError(f"DynamoDBエラー: {str(e)}")
@@ -152,7 +155,9 @@ class DynamoDBSessionRepository(ISessionRepository):
                         updated_at=datetime.fromisoformat(
                             item.get("updated_at", datetime.now().isoformat())
                         ),
-                        expires_at=item.get("expires_at"),
+                        expires_at=int(item["expires_at"])
+                        if item.get("expires_at")
+                        else None,
                     )
                 )
 
