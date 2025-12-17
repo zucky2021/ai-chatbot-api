@@ -27,6 +27,9 @@ AsyncSessionLocal = async_sessionmaker(
     async_engine, class_=AsyncSession, expire_on_commit=False
 )
 
+# MCPサーバー用のセッションファクトリ（コンテキストマネージャーとして使用可能）
+async_session = AsyncSessionLocal
+
 # PostgreSQL (同期) - 必要に応じて
 sync_engine = create_engine(
     settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://"),

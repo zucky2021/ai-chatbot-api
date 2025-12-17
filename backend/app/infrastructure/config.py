@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     JSON_LOGS: bool = True  # 本番環境ではTrue、開発環境ではFalse
 
+    # MCP (Model Context Protocol) Settings
+    MCP_ENABLED: bool = True  # MCPサーバーを有効化
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8"
     )

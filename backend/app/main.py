@@ -14,6 +14,7 @@ from app.infrastructure.config import settings
 from app.infrastructure.database import init_db
 from app.infrastructure.langchain_logging import configure_langchain_logging
 from app.infrastructure.logging import configure_logging, get_logger
+from app.mcp import mcp
 from app.presentation.middleware.error_handler import (
     AppError,
     app_exception_handler,
@@ -84,6 +85,12 @@ app.add_exception_handler(Exception, generic_exception_handler)
 # ルーターの登録
 app.include_router(health.router, prefix="/api/health", tags=["health"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+
+# MCPサーバーのマウント（有効な場合のみ）
+# Claude Desktop、VS Code等のMCPクライアントから /mcp エンドポイントで接続可能
+if settings.MCP_ENABLED:
+    app.mount("/mcp", mcp.http_app())
+    logger.info("mcp_enabled", message="MCP server mounted at /mcp")
 
 
 @app.get("/")
