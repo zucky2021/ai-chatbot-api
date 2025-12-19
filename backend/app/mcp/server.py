@@ -360,7 +360,7 @@ async def chat(
     import uuid
 
     from app.domain.entities.conversation import Conversation
-    from app.domain.value_objects.message import Message, MessageRole
+    from app.domain.value_objects.message import Message
     from app.infrastructure.dependencies import (
         get_ai_service,
         get_conversation_repository,
@@ -380,7 +380,7 @@ async def chat(
         msg = Message(
             content=message,
             sender=user_id,
-            role=MessageRole.USER,
+            timestamp=datetime.now(),
             metadata={"session_id": actual_session_id},
         )
 
