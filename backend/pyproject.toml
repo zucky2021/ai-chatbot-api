@@ -30,6 +30,8 @@ dependencies = [
     # LangGraph
     "langgraph>=1.0.3",
     "langfuse>=3.10.1",
+    # MCP (Model Context Protocol)
+    "fastmcp>=2.14.1",
     # Security: CVE-2025-66418, CVE-2025-66471 対応
     "urllib3>=2.6.0",
 ]
