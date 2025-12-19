@@ -51,6 +51,15 @@ class ConversationResult(BaseModel):
     created_at: str | None
 
 
+class ConversationHistoryItem(BaseModel):
+    """会話履歴アイテム"""
+
+    id: int
+    message: str
+    response: str | None
+    created_at: str | None
+
+
 class SessionInfo(BaseModel):
     """セッション情報"""
 
@@ -58,7 +67,17 @@ class SessionInfo(BaseModel):
     user_id: str
     status: str
     created_at: str | None
+    updated_at: str | None = None
     metadata: dict[str, Any] | None = None
+
+
+class SessionListItem(BaseModel):
+    """セッション一覧アイテム"""
+
+    session_id: str
+    user_id: str
+    status: str
+    created_at: str | None
 
 
 class ChatResponse(BaseModel):
@@ -87,7 +106,7 @@ async def search_conversations(
         default=10, description="取得する最大件数", ge=1, le=100
     ),
     ctx: Context | None = None,
-) -> list[dict[str, Any]]:
+) -> list[ConversationResult]:
     """
     会話履歴をキーワードで検索します。
 
@@ -102,7 +121,7 @@ async def search_conversations(
     if ctx:
         await ctx.info(f"会話履歴を検索中: query='{query}', limit={limit}")
 
-    results: list[dict[str, Any]] = []
+    results: list[ConversationResult] = []
 
     try:
         async with async_session() as session:
@@ -131,16 +150,16 @@ async def search_conversations(
 
             for conv in conversations:
                 results.append(
-                    {
-                        "id": conv.id,
-                        "session_id": conv.session_id,
-                        "user_id": conv.user_id,
-                        "message": conv.message,
-                        "response": conv.response,
-                        "created_at": conv.created_at.isoformat()
+                    ConversationResult(
+                        id=conv.id,
+                        session_id=conv.session_id,
+                        user_id=conv.user_id,
+                        message=conv.message,
+                        response=conv.response,
+                        created_at=conv.created_at.isoformat()
                         if conv.created_at
                         else None,
-                    }
+                    )
                 )
 
         if ctx:
@@ -167,7 +186,7 @@ async def search_conversations(
 async def get_session_history(
     session_id: str = Field(description="セッションID"),
     ctx: Context | None = None,
-) -> list[dict[str, Any]]:
+) -> list[ConversationHistoryItem]:
     """
     特定セッションの会話履歴を取得します。
 
@@ -181,7 +200,7 @@ async def get_session_history(
     if ctx:
         await ctx.info(f"セッション履歴を取得中: session_id='{session_id}'")
 
-    results: list[dict[str, Any]] = []
+    results: list[ConversationHistoryItem] = []
 
     try:
         async with async_session() as session:
@@ -196,14 +215,14 @@ async def get_session_history(
 
             for conv in conversations:
                 results.append(
-                    {
-                        "id": conv.id,
-                        "message": conv.message,
-                        "response": conv.response,
-                        "created_at": conv.created_at.isoformat()
+                    ConversationHistoryItem(
+                        id=conv.id,
+                        message=conv.message,
+                        response=conv.response,
+                        created_at=conv.created_at.isoformat()
                         if conv.created_at
                         else None,
-                    }
+                    )
                 )
 
         if ctx:
@@ -235,7 +254,7 @@ async def get_session_history(
 async def get_session_info(
     session_id: str = Field(description="セッションID"),
     ctx: Context | None = None,
-) -> dict[str, Any] | None:
+) -> SessionInfo | None:
     """
     セッション情報を取得します。
 
@@ -255,18 +274,18 @@ async def get_session_info(
                 await ctx.warning(f"セッションが見つかりません: {session_id}")
             return None
 
-        result = {
-            "session_id": session.session_id,
-            "user_id": session.user_id,
-            "status": session.status.value,
-            "created_at": session.created_at.isoformat()
+        result = SessionInfo(
+            session_id=session.session_id,
+            user_id=session.user_id,
+            status=session.status.value,
+            created_at=session.created_at.isoformat()
             if session.created_at
             else None,
-            "updated_at": session.updated_at.isoformat()
+            updated_at=session.updated_at.isoformat()
             if session.updated_at
             else None,
-            "metadata": session.metadata,
-        }
+            metadata=session.metadata,
+        )
 
         if ctx:
             await ctx.info(
@@ -288,7 +307,7 @@ async def get_session_info(
 async def list_sessions(
     user_id: str = Field(description="ユーザーID"),
     ctx: Context | None = None,
-) -> list[dict[str, Any]]:
+) -> list[SessionListItem]:
     """
     ユーザーのセッション一覧を取得します。
 
@@ -304,14 +323,12 @@ async def list_sessions(
         sessions = await repo.get_by_user_id(user_id)
 
         results = [
-            {
-                "session_id": s.session_id,
-                "user_id": s.user_id,
-                "status": s.status.value,
-                "created_at": s.created_at.isoformat()
-                if s.created_at
-                else None,
-            }
+            SessionListItem(
+                session_id=s.session_id,
+                user_id=s.user_id,
+                status=s.status.value,
+                created_at=s.created_at.isoformat() if s.created_at else None,
+            )
             for s in sessions
         ]
 
@@ -350,7 +367,7 @@ async def chat(
         description="ユーザーID",
     ),
     ctx: Context | None = None,
-) -> dict[str, Any]:
+) -> ChatResponse:
     """
     AIとチャットします。
 
@@ -375,8 +392,10 @@ async def chat(
         )
 
     try:
-        # AIサービスでレスポンスを生成
+        # AIサービスとリポジトリを取得
         ai_service = get_ai_service()
+        repo = await get_conversation_repository()
+
         msg = Message(
             content=message,
             sender=user_id,
@@ -387,7 +406,6 @@ async def chat(
         # コンテキスト取得（既存セッションの場合）
         context = ""
         if session_id:
-            repo = await get_conversation_repository()
             conversations = await repo.get_by_session_id(session_id)
             context_parts = []
             for conv in conversations[-5:]:  # 直近5件
@@ -400,7 +418,6 @@ async def chat(
         response = await ai_service.generate_response(msg, context)
 
         # 会話履歴を保存
-        repo = await get_conversation_repository()
         conversation = Conversation(
             user_id=user_id,
             session_id=actual_session_id,
@@ -411,11 +428,11 @@ async def chat(
         )
         await repo.create(conversation)
 
-        result = {
-            "session_id": actual_session_id,
-            "message": message,
-            "response": response,
-        }
+        result = ChatResponse(
+            session_id=actual_session_id,
+            message=message,
+            response=response,
+        )
 
         if ctx:
             await ctx.info(f"チャット完了: response_length={len(response)}")
