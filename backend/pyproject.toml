@@ -24,7 +24,7 @@ dependencies = [
     "structlog>=25.5.0",
     # LangChain
     "langchain>=1.0.5",
-    "langchain-core>=1.0.7",
+    "langchain-core>=1.2.5",
     "langchain-community>=0.4.1",
     "langchain-google-genai>=3.0.2",
     # LangGraph
@@ -34,6 +34,10 @@ dependencies = [
     "fastmcp>=2.14.1",
     # Security: CVE-2025-66418, CVE-2025-66471 対応
     "urllib3>=2.6.0",
+    # Security: CVE-2025-68480 対応
+    "marshmallow>=3.26.2",
+    # Security: GHSA-w853-jp5j-5j7f 対応
+    "filelock>=3.20.1",
 ]
 
 [project.optional-dependencies]
