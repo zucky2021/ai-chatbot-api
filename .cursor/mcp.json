@@ -18,9 +18,7 @@
     "API specification": {
       "command": "npx",
       "args": ["-y", "apidog-mcp-server@latest", "--project=1134437"],
-      "env": {
-        "APIDOG_ACCESS_TOKEN": "${APIDOG_ACCESS_TOKEN}"
-      }
+      "envFile": "${workspaceFolder}/.env"
     }
   }
 }
