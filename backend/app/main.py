@@ -23,7 +23,7 @@ from app.presentation.middleware.error_handler import (
     validation_exception_handler,
 )
 from app.presentation.middleware.request_id import RequestIDMiddleware
-from app.presentation.routers import chat, health
+from app.presentation.routers import chat, health, sse
 
 # ログ設定
 configure_logging(log_level=settings.LOG_LEVEL, json_logs=settings.JSON_LOGS)
@@ -85,6 +85,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 # ルーターの登録
 app.include_router(health.router, prefix="/api/health", tags=["health"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(sse.router, prefix="/api/sse", tags=["sse"])
 
 # MCPサーバーのマウント（有効な場合のみ）
 # Claude Desktop、VS Code等のMCPクライアントから /mcp エンドポイントで接続可能
