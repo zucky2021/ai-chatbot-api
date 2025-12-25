@@ -6,4 +6,5 @@
 2. [アーキテクチャ](./architecture.md)
 3. [データフロー](./dataflow.md)
 4. [ディレクトリ構造](./directory-structure.md)
-5. [Lambda](./lambda/0-index.md)
+5. [モノレポ設計](./monorepo.md)
+6. [Lambda](./lambda/0-index.md)
