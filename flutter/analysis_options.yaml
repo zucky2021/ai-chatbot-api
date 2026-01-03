@@ -1,0 +1,42 @@
+# This file configures the analyzer for Dart code.
+
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Error prevention
+    avoid_print: true
+    avoid_empty_else: true
+    avoid_returning_null_for_future: true
+    avoid_slow_async_io: true
+    cancel_subscriptions: true
+    close_sinks: true
+    prefer_void_to_null: true
+
+    # Style
+    always_declare_return_types: true
+    always_put_required_named_parameters_first: true
+    always_use_package_imports: true
+    avoid_redundant_argument_values: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    prefer_single_quotes: true
+    sort_constructors_first: true
+    sort_unnamed_constructors_first: true
+    use_super_parameters: true
+
+    # Documentation
+    public_member_api_docs: false
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    invalid_annotation_target: ignore
+
+
+
+
