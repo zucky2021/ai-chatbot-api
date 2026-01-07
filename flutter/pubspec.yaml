@@ -16,27 +16,27 @@ dependencies:
   cupertino_icons: ^1.0.6
 
   # State Management
-  flutter_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
+  flutter_riverpod: ^3.1.0
+  riverpod_annotation: ^4.0.0
 
   # HTTP & WebSocket
   http: ^1.2.0
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   shared_preferences: ^2.2.2
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^6.0.0
 
   # UI Components
-  flutter_markdown: ^0.6.18
+  flutter_markdown_plus: ^1.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.1
-  riverpod_generator: ^2.3.9
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^4.0.0+1
   build_runner: ^2.4.8
 
 flutter:
@@ -45,8 +45,3 @@ flutter:
   assets:
     - assets/
     - .env
-
-  # fonts:
-  #   - family: CustomFont
-  #     fonts:
-  #       - asset: assets/fonts/CustomFont-Regular.ttf
