@@ -16,11 +16,11 @@ class ChatSession {
 
   factory ChatSession.fromJson(Map<String, dynamic> json) {
     return ChatSession(
-      sessionId: json['session_id'] as String,
+      sessionId: json['session_id']?.toString() ?? '',
       userId: json['user_id'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+      createdAt: json['created_at'] is String
+          ? DateTime.tryParse(json['created_at'] as String)
           : null,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
@@ -38,7 +38,3 @@ class ChatSession {
 
   bool get isActive => status == 'active';
 }
-
-
-
-
