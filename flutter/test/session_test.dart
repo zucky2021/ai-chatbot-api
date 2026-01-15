@@ -34,6 +34,32 @@ void main() {
       expect(json['user_id'], 'user-456');
       expect(json['status'], 'active');
     });
+
+    test('should not throw when session_id is null', () {
+      final json = {
+        'session_id': null,
+        'user_id': 'user-456',
+        'status': 'active',
+        'created_at': '2024-01-01T00:00:00.000Z',
+      };
+
+      final session = ChatSession.fromJson(json);
+
+      expect(session.sessionId, '');
+    });
+
+    test('should set createdAt to null when created_at is invalid', () {
+      final json = {
+        'session_id': 'session-123',
+        'user_id': 'user-456',
+        'status': 'active',
+        'created_at': 'not-a-date',
+      };
+
+      final session = ChatSession.fromJson(json);
+
+      expect(session.createdAt, isNull);
+    });
   });
 }
 
