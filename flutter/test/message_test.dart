@@ -24,7 +24,7 @@ void main() {
         id: '123',
         content: 'Hello',
         role: MessageRole.user,
-        timestamp: DateTime(2024, 1, 1),
+        timestamp: DateTime.utc(2024, 1, 1),
       );
 
       final json = message.toJson();
@@ -32,6 +32,7 @@ void main() {
       expect(json['id'], '123');
       expect(json['content'], 'Hello');
       expect(json['role'], 'user');
+      expect(json['timestamp'], '2024-01-01T00:00:00.000Z');
     });
 
     test('should copy Message with new values', () {
