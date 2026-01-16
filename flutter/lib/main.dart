@@ -8,7 +8,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 環境変数を読み込み
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e, st) {
+    // .env が存在しない / 読み込み失敗してもアプリ自体は起動させる
+    debugPrint('Failed to load .env: $e');
+    debugPrintStack(stackTrace: st);
+  }
 
   runApp(
     const ProviderScope(
