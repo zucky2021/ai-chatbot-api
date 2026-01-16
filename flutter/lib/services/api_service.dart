@@ -50,7 +50,6 @@ class ApiService {
   Future<ChatSession?> getSession(String sessionId) async {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/chat/sessions/$sessionId'),
-      headers: {'Content-Type': 'application/json'},
     ).timeout(
       _timeout,
       onTimeout: () => throw _timeoutException,
@@ -77,7 +76,6 @@ class ApiService {
   ) async {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/chat/sessions/$sessionId/messages'),
-      headers: {'Content-Type': 'application/json'},
     ).timeout(
       _timeout,
       onTimeout: () => throw _timeoutException,
