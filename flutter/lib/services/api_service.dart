@@ -7,6 +7,12 @@ import 'package:ai_chatbot/models/session.dart';
 
 /// APIサービス
 class ApiService {
+  static const Duration _timeout = Duration(seconds: 30);
+  static const ApiException _timeoutException = ApiException(
+    statusCode: 408,
+    message: 'リクエストがタイムアウトしました',
+  );
+
   final String baseUrl;
   final http.Client _client;
 
@@ -24,6 +30,9 @@ class ApiService {
       body: jsonEncode({
         'metadata': metadata ?? {'language': 'ja'},
       }),
+    ).timeout(
+      _timeout,
+      onTimeout: () => throw _timeoutException,
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
@@ -42,6 +51,9 @@ class ApiService {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/chat/sessions/$sessionId'),
       headers: {'Content-Type': 'application/json'},
+    ).timeout(
+      _timeout,
+      onTimeout: () => throw _timeoutException,
     );
 
     if (response.statusCode == 404) {
@@ -66,6 +78,9 @@ class ApiService {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/chat/sessions/$sessionId/messages'),
       headers: {'Content-Type': 'application/json'},
+    ).timeout(
+      _timeout,
+      onTimeout: () => throw _timeoutException,
     );
 
     if (response.statusCode != 200) {
@@ -84,7 +99,7 @@ class ApiService {
     try {
       final response = await _client.get(
         Uri.parse('$baseUrl/api/health'),
-      );
+      ).timeout(_timeout);
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -109,7 +124,3 @@ class ApiException implements Exception {
   @override
   String toString() => 'ApiException($statusCode): $message';
 }
-
-
-
-
