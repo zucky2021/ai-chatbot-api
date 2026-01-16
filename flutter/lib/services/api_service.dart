@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:ai_chatbot/config/app_config.dart';
 import 'package:ai_chatbot/models/session.dart';
 
 /// APIサービス
@@ -19,7 +19,7 @@ class ApiService {
   ApiService({
     String? baseUrl,
     http.Client? client,
-  })  : baseUrl = baseUrl ?? dotenv.env['API_BASE_URL'] ?? 'http://localhost:8000',
+  })  : baseUrl = baseUrl ?? AppConfig.apiBaseUrl,
         _client = client ?? http.Client();
 
   /// セッションを作成

@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+import 'package:ai_chatbot/config/app_config.dart';
 
 /// WebSocketサービス
 class WebSocketService {
@@ -15,7 +16,7 @@ class WebSocketService {
   bool _isDisposed = false;
 
   WebSocketService({String? baseUrl})
-      : baseUrl = baseUrl ?? dotenv.env['WS_BASE_URL'] ?? 'ws://localhost:8000';
+      : baseUrl = baseUrl ?? AppConfig.wsBaseUrl;
 
   /// メッセージストリーム
   Stream<WebSocketMessage> get messageStream => _messageController.stream;
