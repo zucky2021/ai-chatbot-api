@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
 import 'package:ai_chatbot/models/message.dart';
 import 'package:ai_chatbot/services/api_service.dart';
@@ -20,6 +21,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final ApiService _apiService = ApiService();
   final WebSocketService _wsService = WebSocketService();
+  StreamSubscription<WebSocketMessage>? _wsSubscription;
 
   String? _sessionId;
   bool _isLoading = true;
@@ -43,10 +45,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _wsService.connect(_sessionId!);
 
       // メッセージストリームを購読
-      _wsService.messageStream.listen(_handleWebSocketMessage);
+      _wsSubscription?.cancel();
+      _wsSubscription = _wsService.messageStream.listen(
+        _handleWebSocketMessage,
+        onError: (e) {
+          if (!mounted) return;
+          setState(() {
+            _error = '通信エラーが発生しました: $e';
+            _isStreaming = false;
+            _streamingContent = '';
+          });
+          _showSnackBar(_error!);
+        },
+      );
 
       setState(() {
         _isLoading = false;
+        _error = null;
       });
     } catch (e) {
       setState(() {
@@ -54,6 +69,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _error = 'セッション作成に失敗しました: $e';
       });
     }
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.removeCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _handleWebSocketMessage(WebSocketMessage message) {
@@ -86,11 +110,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _isStreaming = false;
           _streamingContent = '';
         });
+        if (_error != null && _error!.isNotEmpty) {
+          _showSnackBar(_error!);
+        }
         break;
       case WebSocketMessageType.disconnected:
         setState(() {
           _error = '接続が切断されました';
         });
+        _showSnackBar(_error!);
         break;
       default:
         break;
@@ -131,6 +159,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _wsSubscription?.cancel();
     _wsService.dispose();
     _apiService.dispose();
     super.dispose();
