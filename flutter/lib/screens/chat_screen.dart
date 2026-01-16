@@ -226,13 +226,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Icon(
             Icons.chat_bubble_outline,
             size: 64,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            color: Theme.of(context)
+                .colorScheme
+                .primary
+                .withValues(alpha: (0.5 * 255).round()),
           ),
           const SizedBox(height: 16),
           Text(
             'メッセージを入力してください',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: (0.6 * 255).round()),
             ),
           ),
         ],

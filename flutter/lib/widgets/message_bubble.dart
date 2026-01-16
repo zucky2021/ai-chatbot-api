@@ -86,7 +86,7 @@ class MessageBubble extends StatelessWidget {
                     '入力中...',
                     style: TextStyle(
                       fontSize: 12,
-                      color: colorScheme.onSurface.withOpacity(0.6),
+                      color: colorScheme.onSurface.withValues(alpha: (0.6 * 255).round()),
                     ),
                   ),
                 ],
@@ -100,8 +100,8 @@ class MessageBubble extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: isUser
-                      ? colorScheme.onPrimaryContainer.withOpacity(0.6)
-                      : colorScheme.onSurface.withOpacity(0.6),
+                      ? colorScheme.onPrimaryContainer.withValues(alpha: (0.6 * 255).round())
+                      : colorScheme.onSurface.withValues(alpha: (0.6 * 255).round()),
                 ),
               ),
             ],
