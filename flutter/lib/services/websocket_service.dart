@@ -8,9 +8,11 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class WebSocketService {
   final String baseUrl;
   WebSocketChannel? _channel;
+  StreamSubscription<dynamic>? _channelSubscription;
   final StreamController<WebSocketMessage> _messageController =
       StreamController<WebSocketMessage>.broadcast();
   bool _isConnected = false;
+  bool _isDisposed = false;
 
   WebSocketService({String? baseUrl})
       : baseUrl = baseUrl ?? dotenv.env['WS_BASE_URL'] ?? 'ws://localhost:8000';
@@ -21,8 +23,22 @@ class WebSocketService {
   /// 接続状態
   bool get isConnected => _isConnected;
 
+  void _safeAdd(WebSocketMessage message) {
+    if (_isDisposed) return;
+    if (_messageController.isClosed) return;
+    try {
+      _messageController.add(message);
+    } on StateError {
+      // dispose競合等で controller が閉じられている場合は無視
+    }
+  }
+
   /// WebSocket接続
   Future<void> connect(String sessionId) async {
+    if (_isDisposed) {
+      throw StateError('WebSocketService は dispose 済みです');
+    }
+
     if (_isConnected) {
       await disconnect();
     }
@@ -33,24 +49,24 @@ class WebSocketService {
       _channel = WebSocketChannel.connect(uri);
       _isConnected = true;
 
-      _channel!.stream.listen(
+      _channelSubscription = _channel!.stream.listen(
         (dynamic data) {
           _handleMessage(data);
         },
         onError: (dynamic error) {
-          _messageController.add(WebSocketMessage.error(error.toString()));
           _isConnected = false;
+          _safeAdd(WebSocketMessage.error(error.toString()));
         },
         onDone: () {
           _isConnected = false;
-          _messageController.add(const WebSocketMessage.disconnected());
+          _safeAdd(const WebSocketMessage.disconnected());
         },
       );
 
-      _messageController.add(const WebSocketMessage.connected());
+      _safeAdd(const WebSocketMessage.connected());
     } catch (e) {
       _isConnected = false;
-      _messageController.add(WebSocketMessage.error(e.toString()));
+      _safeAdd(WebSocketMessage.error(e.toString()));
       rethrow;
     }
   }
@@ -65,19 +81,23 @@ class WebSocketService {
         switch (type) {
           case 'stream':
             final content = json['content'] as String? ?? '';
-            _messageController.add(WebSocketMessage.stream(content));
+            _safeAdd(WebSocketMessage.stream(content));
+            break;
           case 'complete':
             final content = json['content'] as String? ?? '';
-            _messageController.add(WebSocketMessage.complete(content));
+            _safeAdd(WebSocketMessage.complete(content));
+            break;
           case 'error':
             final error = json['error'] as String? ?? 'Unknown error';
-            _messageController.add(WebSocketMessage.error(error));
+            _safeAdd(WebSocketMessage.error(error));
+            break;
           default:
-            _messageController.add(WebSocketMessage.unknown(data));
+            _safeAdd(WebSocketMessage.unknown(data.toString()));
+            break;
         }
       }
     } catch (e) {
-      _messageController.add(WebSocketMessage.error('メッセージ解析エラー: $e'));
+      _safeAdd(WebSocketMessage.error('メッセージ解析エラー: $e'));
     }
   }
 
@@ -98,14 +118,28 @@ class WebSocketService {
   /// 切断
   Future<void> disconnect() async {
     _isConnected = false;
+    final subscription = _channelSubscription;
+    _channelSubscription = null;
+    await subscription?.cancel();
     await _channel?.sink.close();
     _channel = null;
   }
 
   /// リソース解放
   void dispose() {
-    disconnect();
-    _messageController.close();
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _isConnected = false;
+
+    // disconnect() は async のため await できないが、
+    // controller を先に close すると onDone/onError から add されうる。
+    // disconnect 完了後に close することで "Cannot add event after closing" を防ぐ。
+    unawaited(
+      disconnect().whenComplete(() async {
+        if (_messageController.isClosed) return;
+        await _messageController.close();
+      }),
+    );
   }
 }
 

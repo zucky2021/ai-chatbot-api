@@ -64,6 +64,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _isStreaming = true;
         });
         _scrollToBottom();
+        break;
       case WebSocketMessageType.complete:
         setState(() {
           if (_streamingContent.isNotEmpty) {
@@ -78,16 +79,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _isStreaming = false;
         });
         _scrollToBottom();
+        break;
       case WebSocketMessageType.error:
         setState(() {
           _error = message.error;
           _isStreaming = false;
           _streamingContent = '';
         });
+        break;
       case WebSocketMessageType.disconnected:
         setState(() {
           _error = '接続が切断されました';
         });
+        break;
       default:
         break;
     }
@@ -229,7 +233,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             color: Theme.of(context)
                 .colorScheme
                 .primary
-                .withValues(alpha: (0.5 * 255).round()),
+                .withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -238,7 +242,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: (0.6 * 255).round()),
+                  .withValues(alpha: 0.6),
             ),
           ),
         ],
