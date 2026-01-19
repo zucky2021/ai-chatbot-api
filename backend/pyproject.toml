@@ -38,6 +38,7 @@ dependencies = [
     "marshmallow>=3.26.2",
     # Security Fix
     "filelock>=3.20.3",
+    "pyasn1>=0.6.2", # Security Fix
     # Security Fix
     "aiohttp>=3.13.3",
 ]
