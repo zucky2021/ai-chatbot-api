@@ -4,15 +4,27 @@
 
 ```sh
 ai-chatbot-api/
-├── backend/
+├── backend/                   # Python (FastAPI)
 │   ├── app/
 │   └── Dockerfile
-├── frontend/
+├── frontend/                  # TypeScript (React + Vite)
 │   ├── src/
 │   │   ├── App.tsx           # メインコンポーネント
 │   │   └── main.tsx          # エントリーポイント
 │   ├── Dockerfile
 │   └── package.json
+├── flutter/                   # Dart (Flutter)
+│   ├── lib/
+│   │   ├── main.dart         # エントリーポイント
+│   │   ├── models/           # データモデル
+│   │   ├── screens/          # 画面
+│   │   ├── services/         # サービス
+│   │   └── widgets/          # ウィジェット
+│   ├── test/                 # テスト
+│   └── pubspec.yaml          # 依存関係
+├── lambda/                    # Python (AWS CDK + Lambda)
+├── localstack/                # ローカルAWS環境
+├── docs/                      # ドキュメント
 ├── compose.yml               # Docker Compose設定
 └── README.md
 ```

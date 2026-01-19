@@ -70,6 +70,36 @@
   - ディスク効率が良い（node_modulesの重複削減）
   - 厳密なパッケージ依存関係管理
 
+## モバイル（Flutter）
+
+### Flutter
+
+- [公式サイト](https://flutter.dev/)
+- 選定理由
+  - 1つのコードベースでiOS、Android、Webアプリを構築可能
+  - 宣言的UIでReactに近い開発体験
+  - ホットリロードによる高速な開発サイクル
+  - Material Design 3対応で美しいUI
+  - Dart言語の学習
+
+### Dart
+
+- [公式サイト](https://dart.dev/)
+- 選定理由
+  - Flutter公式言語
+  - 型安全でモダンな構文
+  - async/awaitによる非同期処理
+  - null safety対応
+
+### Riverpod
+
+- [公式サイト](https://riverpod.dev/)
+- 選定理由
+  - Flutterの状態管理ライブラリ
+  - コンパイル時の安全性
+  - テスタビリティの向上
+  - Providerの進化版として設計
+
 ## MCP (Model Context Protocol)
 
 ### FastMCP
