@@ -38,8 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --frozen
-          uv pip install -e ".[dev]"
+          uv sync --frozen --no-dev
 
       - name: Display dependency tree
         run: uv tree
@@ -47,5 +46,8 @@ jobs:
       - name: Check for available updates (dry-run)
         run: uv lock --upgrade --dry-run || echo "Update check completed"
 
+      - name: Export requirements for audit
+        run: uv export --frozen --no-dev --format requirements.txt --output-file requirements-audit.txt
+
       - name: Security vulnerability scan
-        run: uv run pip-audit --desc
+        run: uvx pip-audit -r requirements-audit.txt --desc --ignore-vuln CVE-2025-67221 # orjson: 修正版が未提供のため一時除外
