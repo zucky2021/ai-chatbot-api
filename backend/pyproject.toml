@@ -24,7 +24,7 @@ dependencies = [
     "structlog>=25.5.0",
     # LangChain
     "langchain>=1.0.5",
-    "langchain-core>=1.2.5",
+    "langchain-core>=1.2.11",
     "langchain-community>=0.4.1",
     "langchain-google-genai>=3.0.2",
     # LangGraph
@@ -33,6 +33,7 @@ dependencies = [
     # MCP (Model Context Protocol)
     "fastmcp>=2.14.1",
     # Security Fix
+    "cryptography>=46.0.5",  # Security Fix
     "urllib3>=2.6.3",  # Security Fix
     "marshmallow>=3.26.2",  # Security Fix
     "protobuf>=6.33.5",  # Security Fix

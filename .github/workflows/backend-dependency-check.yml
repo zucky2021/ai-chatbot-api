@@ -50,4 +50,4 @@ jobs:
         run: uv export --frozen --no-dev --format requirements.txt --output-file requirements-audit.txt
 
       - name: Security vulnerability scan
-        run: uvx pip-audit -r requirements-audit.txt --desc --ignore-vuln CVE-2025-67221 # orjson: 修正版が未提供のため一時除外
+        run: uvx pip-audit -r requirements-audit.txt --desc
